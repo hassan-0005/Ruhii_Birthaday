@@ -1,60 +1,55 @@
 
 import streamlit as st
 import streamlit.components.v1 as components
+import time
 
 # ==========================================
-# RUHI'S SPECIAL BIRTHDAY WEBSITE
-# Created with love and duas
+# RUHII - BIRTHDAY SURPRISE WEBSITE
 # ==========================================
 
 st.set_page_config(
-    page_title="Happy Birthday Ruhi 🎀",
-    page_icon="🎂",
+    page_title="Happy Birthday My Dear Bestiee 🎀",
+    page_icon="💗",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
 # ==========================================
-# PERSONAL SETTINGS
+# PERSONAL DETAILS
 # ==========================================
 
-FRIEND_NAME = "Ruhi"
-YOUR_NAME = "Your Special Friend"
+FRIEND = "Ruhii"
+YOUR_NAME = "Your Best Friend"
 
-# Change YOUR_NAME to your own name.
-# You can also personalize the messages below.
+# Change YOUR_NAME to your actual name.
 
 # ==========================================
 # SESSION STATE
 # ==========================================
 
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
+if "step" not in st.session_state:
+    st.session_state.step = 0
 
-if "surprise_open" not in st.session_state:
-    st.session_state.surprise_open = False
+if "gift_open" not in st.session_state:
+    st.session_state.gift_open = False
 
 if "letter_open" not in st.session_state:
     st.session_state.letter_open = False
 
-if "celebrated" not in st.session_state:
-    st.session_state.celebrated = False
-
 # ==========================================
-# CSS DESIGN AND ANIMATIONS
+# DESIGN
 # ==========================================
 
 st.markdown("""
 <style>
-
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 .stApp {
     background:
-        radial-gradient(circle at 10% 10%, #ffe0ed 0%, transparent 35%),
-        radial-gradient(circle at 90% 20%, #eadfff 0%, transparent 35%),
-        linear-gradient(135deg, #fff7fa, #fff0f5, #f8f0ff);
-    font-family: 'DM Sans', sans-serif;
+    radial-gradient(circle at 10% 10%, #ffe1ed, transparent 35%),
+    radial-gradient(circle at 90% 15%, #e8d9ff, transparent 35%),
+    linear-gradient(135deg,#fff7fa,#fceaf3,#f7edff);
+    font-family: 'Poppins', sans-serif;
 }
 
 header, footer, #MainMenu {
@@ -63,68 +58,56 @@ header, footer, #MainMenu {
 
 .block-container {
     max-width: 1050px;
-    padding-top: 1.5rem;
+    padding-top: 2rem;
     padding-bottom: 3rem;
 }
 
-h1, h2, h3 {
+h1,h2,h3 {
     font-family: 'Playfair Display', serif !important;
-    color: #b64279 !important;
+    color: #b83d79 !important;
 }
 
 p {
-    color: #77556a;
+    color: #80536d;
     line-height: 1.9;
 }
 
 .hero {
-    background: rgba(255,255,255,0.78);
-    border: 1px solid white;
-    border-radius: 30px;
-    padding: 48px 22px;
+    background: rgba(255,255,255,0.82);
+    border: 2px solid white;
+    border-radius: 32px;
+    padding: 45px 22px;
     text-align: center;
-    box-shadow: 0 12px 40px rgba(190, 85, 140, 0.12);
-    animation: fadeUp 1s ease;
+    box-shadow: 0 12px 40px rgba(195,80,140,.14);
+    animation: appear 1s ease;
 }
 
 .hero h1 {
-    font-size: clamp(36px, 7vw, 68px);
-    margin: 10px 0;
-    background: linear-gradient(90deg, #d34f91, #9b6cce);
+    font-size: clamp(35px,7vw,65px);
+    background: linear-gradient(90deg,#df5796,#a27bd9);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.hero p {
-    font-size: 17px;
-}
-
-.eyebrow {
-    color: #c35b91;
-    letter-spacing: 3px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
 .card {
-    background: rgba(255,255,255,0.83);
-    border: 1px solid #f8d6e7;
-    border-radius: 24px;
+    background: rgba(255,255,255,.88);
+    border: 1px solid #f6cfe1;
+    border-radius: 25px;
     padding: 25px;
-    margin: 17px 0;
-    box-shadow: 0 8px 25px rgba(190, 85, 140, 0.08);
-    transition: 0.3s;
-    animation: fadeUp 0.8s ease;
-}
-
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(190, 85, 140, 0.15);
+    margin: 18px 0;
+    box-shadow: 0 8px 25px rgba(180,75,130,.09);
+    animation: appear 0.9s ease;
 }
 
 .center {
     text-align: center;
+}
+
+.eyebrow {
+    color: #ca6598;
+    letter-spacing: 3px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .subtitle {
@@ -132,569 +115,501 @@ p {
     line-height: 2;
 }
 
-.big-heart {
-    font-size: 45px;
+.heart {
     display: inline-block;
-    animation: heartbeat 1.8s infinite;
+    font-size: 55px;
+    animation: beat 1.5s infinite;
 }
 
-.small-title {
-    color: #b64279;
-    font-family: 'Playfair Display', serif;
-    font-size: 25px;
-    font-weight: 600;
-}
-
-.quote {
-    font-style: italic;
-    font-size: 18px;
-    color: #9c5480;
-    text-align: center;
+.cake {
+    font-size: 100px;
+    animation: bounce 2s infinite;
 }
 
 .gift {
-    font-size: 100px;
+    font-size: 110px;
+    animation: gift 1.8s infinite;
     text-align: center;
-    animation: giftBounce 2s infinite;
+}
+
+.quote {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-style: italic;
+    color: #ae5684;
+    text-align: center;
+}
+
+.stButton > button {
+    background: linear-gradient(90deg,#e65d9c,#a77bd7);
+    color: white;
+    border: 2px solid white;
+    border-radius: 40px;
+    padding: 13px 20px;
+    font-weight: 700;
+    width: 100%;
+    min-height: 48px;
+    box-shadow: 0 6px 20px rgba(190,70,130,.22);
+    transition: .3s;
+}
+
+.stButton > button:hover {
+    transform: scale(1.04);
+    background: linear-gradient(90deg,#d9478b,#9364ca);
+    color: white;
+}
+
+.progress-text {
+    text-align: center;
+    color: #b85b8a;
+    font-weight: 600;
+    margin-bottom: 10px;
 }
 
 .footer {
     text-align: center;
-    color: #ad6b8e;
     padding: 30px 10px;
+    color: #b65d8c;
     font-size: 13px;
 }
 
-.stButton > button {
-    border-radius: 30px;
-    background: linear-gradient(90deg, #e77eac, #b98cdb);
-    color: white;
-    border: none;
-    padding: 12px 18px;
-    font-weight: 600;
-    transition: 0.3s;
-    width: 100%;
+@keyframes appear {
+    from {opacity:0; transform:translateY(25px);}
+    to {opacity:1; transform:translateY(0);}
 }
 
-.stButton > button:hover {
-    transform: scale(1.025);
-    color: white;
-    border: 1px solid white;
-    box-shadow: 0 6px 20px #e9bad3;
+@keyframes beat {
+    0%,100% {transform:scale(1);}
+    50% {transform:scale(1.2);}
 }
 
-div[role="radiogroup"] {
-    justify-content: center;
-    gap: 8px;
+@keyframes bounce {
+    0%,100% {transform:translateY(0);}
+    50% {transform:translateY(-15px);}
 }
 
-div[role="radiogroup"] label {
-    background: rgba(255,255,255,0.85);
-    padding: 10px 16px;
-    border-radius: 22px;
-    border: 1px solid #f4c8dc;
-}
-
-div[role="radiogroup"] label p {
-    color: #a34476;
-    font-weight: 600;
-}
-
-div[data-testid="stTextArea"] textarea {
-    border-radius: 15px;
-}
-
-@keyframes heartbeat {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-}
-
-@keyframes giftBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-13px); }
-}
-
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes floatHeart {
-    0% { transform: translateY(105vh) rotate(0deg); opacity: 0; }
-    15% { opacity: 0.8; }
-    100% { transform: translateY(-15vh) rotate(360deg); opacity: 0; }
-}
-
-.float-heart {
-    position: fixed;
-    bottom: -40px;
-    z-index: 0;
-    pointer-events: none;
-    animation: floatHeart linear infinite;
-    opacity: 0.7;
-    font-size: 22px;
+@keyframes gift {
+    0%,100% {transform:rotate(-5deg) scale(1);}
+    50% {transform:rotate(5deg) scale(1.1);}
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# FLOATING HEARTS AND SPRINKLES
+# LIVE FLOATING HEARTS
 # ==========================================
 
 components.html("""
-<div id="birthday-effects"></div>
+<div id="sky"></div>
 <style>
-.float {
+#sky {
     position: fixed;
-    bottom: -40px;
-    animation: rise linear infinite;
+    inset: 0;
     pointer-events: none;
-    z-index: 9999;
-    opacity: 0.8;
+    overflow: hidden;
 }
-@keyframes rise {
-    0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-    15% { opacity: 0.8; }
-    100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+.floating {
+    position: absolute;
+    bottom: -50px;
+    animation: floatUp linear infinite;
+    opacity: 0;
+}
+@keyframes floatUp {
+    0% {transform:translateY(0) rotate(0deg);opacity:0;}
+    15% {opacity:.8;}
+    100% {transform:translateY(-110vh) rotate(360deg);opacity:0;}
 }
 </style>
 <script>
-const container = document.getElementById("birthday-effects");
-const icons = ["💗","💕","✨","🌸","🎀","🦋","💖","🌷"];
-for (let i = 0; i < 22; i++) {
-    let item = document.createElement("span");
-    item.className = "float";
-    item.innerText = icons[Math.floor(Math.random()*icons.length)];
-    item.style.left = Math.random()*100 + "vw";
-    item.style.animationDuration = (7 + Math.random()*10) + "s";
-    item.style.animationDelay = (-Math.random()*12) + "s";
-    item.style.fontSize = (15 + Math.random()*16) + "px";
-    container.appendChild(item);
+const sky=document.getElementById("sky");
+const symbols=["💗","💕","✨","🌸","🎀","🦋","💖"];
+for(let i=0;i<24;i++){
+    let x=document.createElement("span");
+    x.className="floating";
+    x.innerText=symbols[Math.floor(Math.random()*symbols.length)];
+    x.style.left=Math.random()*100+"%";
+    x.style.animationDuration=(8+Math.random()*10)+"s";
+    x.style.animationDelay=(-Math.random()*15)+"s";
+    x.style.fontSize=(16+Math.random()*18)+"px";
+    sky.appendChild(x);
 }
 </script>
 """, height=0)
 
 # ==========================================
-# HEADER
+# BALLOON ENTRANCE ANIMATION
 # ==========================================
 
-st.markdown("""
-<div class="center">
-    <div class="eyebrow">A LITTLE WORLD MADE FOR SOMEONE SPECIAL</div>
-    <div style="font-size:25px; margin-top:5px;">
-        🎀 💗 🌸 💗 🎀
+def balloon_animation():
+
+    components.html("""
+    <div class="scene">
+      <div class="balloon b1">🎈</div>
+      <div class="balloon b2">🎈</div>
+      <div class="balloon b3">🎈</div>
+      <div class="balloon b4">🎈</div>
+      <div class="balloon b5">🎈</div>
+      <div class="balloon b6">🎈</div>
+      <div class="balloon b7">🎈</div>
+      <div class="balloon b8">🎈</div>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    <style>
+      body {margin:0;background:transparent;overflow:hidden;}
+      .scene {height:180px;position:relative;overflow:hidden;}
+      .balloon {
+        position:absolute;
+        bottom:-100px;
+        font-size:65px;
+        animation: enter 3s ease-out forwards;
+      }
+      .b1 {left:-10%;animation-delay:0s;}
+      .b2 {left:12%;animation-delay:.3s;}
+      .b3 {left:30%;animation-delay:.6s;}
+      .b4 {left:48%;animation-delay:.9s;}
+      .b5 {right:30%;animation-delay:1.2s;}
+      .b6 {right:12%;animation-delay:.4s;}
+      .b7 {right:-10%;animation-delay:.7s;}
+      .b8 {left:68%;animation-delay:1s;}
+      @keyframes enter {
+        0% {transform:translateY(180px) scale(.3);opacity:0;}
+        60% {opacity:1;}
+        100% {transform:translateY(-180px) scale(1);opacity:1;}
+      }
+    </style>
+    """, height=190)
 
 # ==========================================
-# NAVIGATION
+# NAVIGATION FUNCTION
 # ==========================================
 
-pages = [
-    "🏠 Home",
-    "💌 Wishes",
-    "🤲 Duas",
-    "🦋 Memories",
-    "🎁 Surprise"
-]
-
-current_page = st.session_state.page
-
-page_labels = {
-    "🏠 Home": "Home",
-    "💌 Wishes": "Wishes",
-    "🤲 Duas": "Duas",
-    "🦋 Memories": "Memories",
-    "🎁 Surprise": "Surprise"
-}
-
-default_label = next(
-    (label for label, value in page_labels.items()
-     if value == current_page),
-    "🏠 Home"
-)
-
-selected = st.radio(
-    "Navigate",
-    pages,
-    index=pages.index(default_label),
-    horizontal=True,
-    label_visibility="collapsed",
-    key="navigation"
-)
-
-new_page = page_labels[selected]
-
-if new_page != st.session_state.page:
-    st.session_state.page = new_page
+def next_page():
+    st.session_state.step += 1
     st.rerun()
 
-st.markdown("---")
+def previous_page():
+    st.session_state.step -= 1
+    st.rerun()
+
+def next_button(label="NEXT PAGE 💗"):
+    st.write("")
+    a,b,c = st.columns([1,2,1])
+    with b:
+        if st.button(label, key=f"next_{st.session_state.step}"):
+            next_page()
+
+def back_button():
+    a,b,c = st.columns([1,2,1])
+    with b:
+        if st.button("← PREVIOUS PAGE", key=f"back_{st.session_state.step}"):
+            previous_page()
 
 # ==========================================
-# PAGE 1: HOME
+# WELCOME SCREEN
 # ==========================================
 
-if st.session_state.page == "Home":
+if st.session_state.step == 0:
 
-    st.markdown(f"""
+    st.markdown("""
     <div class="hero">
-        <div class="eyebrow">TODAY IS ALL ABOUT YOU</div>
-        <div class="big-heart">💗</div>
-        <h1>Happy Birthday {FRIEND_NAME}!</h1>
-        <h2>🎂 Your Special Day Is Here 🎂</h2>
-        <p>
-        Aaj ka din bohat special hai,
-        kyun ke aaj ek bohat pyari person ka birthday hai!
+        <div class="eyebrow">A LITTLE SURPRISE IS WAITING FOR YOU</div>
+        <div class="heart">💗</div>
+        <h1>Hey Ruhii! 🎀</h1>
+        <h2>Your Special Day Is Here!</h2>
+        <p class="subtitle">
+        Someone has created a little magical world
+        just for you.
+        <br><br>
+        Are you ready to enter?
         </p>
-        <div style="font-size:38px;">🌸 🦋 🎀 💕 ✨</div>
-        <p>
-        Welcome to your little birthday world.
-        This small surprise is made just to bring a smile
-        to your face.
-        </p>
+        <div style="font-size:42px;">🌸 🦋 🎀 💕</div>
     </div>
     """, unsafe_allow_html=True)
 
     st.write("")
+    a,b,c=st.columns([1,2,1])
 
-    st.markdown(f"""
-    <div class="card center">
-        <div class="small-title">Dear {FRIEND_NAME} 💌</div>
-        <p class="subtitle">
-        Pata hai? Kuch log apni presence se ordinary
-        moments ko bhi beautiful bana dete hain.
-        <br><br>
-        And today, I just want to celebrate you!
-        <br><br>
-        May your smile never fade, your dreams never stop
-        and your heart always find reasons to be happy.
-        <br><br>
-        Aaj bas enjoy karo, khush raho aur bohat saari
-        smiles do!
-        </p>
-        <div class="quote">
-        "You deserve all the happiness in this world." 💗
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    col1, col2, col3 = st.columns([1, 2, 1])
-
-    with col2:
-        if st.button("Let's Start Your Surprise Journey 💕"):
-            st.session_state.page = "Wishes"
+    with b:
+        if st.button("💗 CLICK HERE, RUHII 💗"):
+            st.session_state.step=1
             st.rerun()
 
-    st.markdown("""
-    <div class="card center">
-        <h2>Today's Special Reminder 🌷</h2>
-        <p class="subtitle">
-        You are precious. Your dreams are important.
-        Your happiness matters.
-        <br>
-        Never forget your worth.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
 # ==========================================
-# PAGE 2: WISHES
+# PAGE 1: BIRTHDAY CELEBRATION
 # ==========================================
 
-elif st.session_state.page == "Wishes":
+elif st.session_state.step == 1:
+
+    balloon_animation()
 
     st.markdown("""
     <div class="hero">
-        <div class="eyebrow">A FEW WORDS FROM THE HEART</div>
-        <h1>Birthday Wishes 💌</h1>
-        <p>Har wish mein tumhare liye ek pyara sa message hai.</p>
+        <div class="eyebrow">TODAY IS ALL ABOUT YOU</div>
+        <div class="heart">💖</div>
+        <h1>Happy Birthday</h1>
+        <h1>My Dear Bestiee!</h1>
+        <div class="cake">🎂</div>
+        <h2>Happiest Birthday Ruhii! 🎀</h2>
+        <p class="subtitle">
+        Finally, tumhara special day aa gaya!
+        <br>
+        Aaj sirf smile karna hai, enjoy karna hai
+        aur bohat saari khushiyan collect karni hain.
+        <br><br>
+        You deserve all the beautiful things in life!
+        </p>
+        <div style="font-size:35px;">🎈 🌸 🦋 ✨ 🎉</div>
     </div>
     """, unsafe_allow_html=True)
 
-    wishes = [
-        (
-            "🌸 Happiness",
-            "May your life always be full of happiness. "
-            "Tumhari smile hamesha aisi hi beautiful rahe "
-            "aur tumhein kabhi khush rehne ke liye kisi reason "
-            "ki zaroorat na ho."
-        ),
-        (
-            "🦋 Dreams & Success",
-            "May every dream you have slowly become reality. "
-            "Allah tumhein har us manzil tak pohanchaye "
-            "jahan tum jana chahti ho. Keep believing in yourself!"
-        ),
-        (
-            "💗 Beautiful Moments",
-            "May this year give you unforgettable memories, "
-            "beautiful surprises and people who genuinely care "
-            "about you."
-        ),
-        (
-            "🎀 Endless Smiles",
-            "I hope tumhari life mein sadness se zyada smiles, "
-            "worries se zyada peace aur disappointments se "
-            "zyada beautiful surprises hon."
-        ),
-        (
-            "✨ A New Chapter",
-            "A new year of your life means new opportunities, "
-            "new experiences and new reasons to shine. "
-            "Make this chapter your most beautiful one!"
-        )
+    st.balloons()
+
+    next_button("LET'S SEE YOUR WISHES 💌")
+    back_button()
+
+# ==========================================
+# PAGE 2: BIRTHDAY WISHES
+# ==========================================
+
+elif st.session_state.step == 2:
+
+    st.markdown("""
+    <div class="hero">
+        <div class="eyebrow">A MESSAGE FROM THE HEART</div>
+        <h1>Birthday Wishes 💌</h1>
+        <p>Every little wish is specially for you!</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    wishes=[
+        ("🌸 Endless Happiness",
+         "May your life hamesha khushiyon se bhari rahe. "
+         "Tumhari smile kabhi fade na ho aur har din "
+         "tumhare liye ek beautiful reason lekar aaye."),
+
+        ("🦋 Dream Big",
+         "May all your dreams come true. Allah tumhein "
+         "har us manzil tak pohanchaye jahan tum pohanchna chahti ho."),
+
+        ("💗 Beautiful Memories",
+         "I hope this year gives you unforgettable memories, "
+         "unexpected surprises and lots of reasons to smile."),
+
+        ("🎀 Keep Shining",
+         "Never underestimate yourself. Tum bohat kuch "
+         "achieve kar sakti ho. Always believe in yourself."),
+
+        ("✨ A Beautiful Future",
+         "May your future be brighter than your past "
+         "and your coming days be full of love, success and peace.")
     ]
 
-    for title, message in wishes:
+    for title,message in wishes:
         st.markdown(f"""
         <div class="card">
-            <div class="small-title">{title}</div>
+            <h2>{title}</h2>
             <p class="subtitle">{message}</p>
         </div>
-        """, unsafe_allow_html=True)
+        """,unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="hero">
-        <h2>Once Again, Happy Birthday! 🎂</h2>
-        <p>
-        Stay happy, stay blessed and keep shining.
-        The best is yet to come! 💗
-        </p>
+    <div class="card center">
+        <div class="quote">
+        "You deserve happiness, not just today,
+        but every single day." 💗
+        </div>
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
+
+    next_button("NOW SOME SPECIAL DUAS 🤲")
+    back_button()
 
 # ==========================================
 # PAGE 3: DUAS
 # ==========================================
 
-elif st.session_state.page == "Duas":
+elif st.session_state.step == 3:
 
     st.markdown("""
     <div class="hero">
         <div class="eyebrow">PRAYERS FROM THE HEART</div>
         <h1>Special Duas For You 🤲</h1>
-        <p>
-        Kuch wishes words mein hoti hain,
-        aur kuch dil se nikli hui duaein.
-        </p>
+        <p>Words may finish, but good duas never do.</p>
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
 
-    duas = [
-        (
-            "🤲 Happiness & Peace",
-            "May Allah tumhare dil ko hamesha sukoon de, "
-            "tumhari zindagi se pareshaniyan door kare "
-            "aur tumhein har haal mein khush rakhe."
-        ),
-        (
-            "🌷 Success & Dreams",
-            "May Allah tumhari mehnat mein barkat de, "
-            "tumhare liye kamyabi ke raaste kholay "
-            "aur tumhare achay khwabon ko haqeeqat banaye."
-        ),
-        (
-            "💗 Health & Protection",
-            "May Allah tumhein sehat, afiyat aur apni hifazat "
-            "mein rakhe. Har buri nazar, mushkil aur pareshani "
-            "se mehfooz farmaye."
-        ),
-        (
-            "✨ Blessings",
-            "May Allah tumhari zindagi mein itni barkat de "
-            "ke tum har din apni blessings ko appreciate kar sako."
-        ),
-        (
-            "🕊️ A Beautiful Future",
-            "May Allah tumhara mustaqbil roshan kare, "
-            "tumhein achay logon ka saath de "
-            "aur har faislay mein behtari ata farmaye."
-        )
+    duas=[
+        ("🤲 Happiness",
+         "May Allah tumhare dil ko sukoon de, "
+         "har pareshani door kare aur hamesha khush rakhe."),
+
+        ("🌷 Success",
+         "May Allah tumhari mehnat mein barkat de, "
+         "tumhare dreams poore kare aur har achay maqsad "
+         "mein kamyabi ata farmaye."),
+
+        ("💗 Health",
+         "May Allah tumhein sehat, afiyat aur lambi "
+         "khushhaal zindagi ata farmaye."),
+
+        ("🕊️ Protection",
+         "May Allah tumhein har buri nazar, har mushkil "
+         "aur har nuqsan se mehfooz rakhe."),
+
+        ("✨ Blessings",
+         "May Allah tumhari zindagi ko rehmat, barkat, "
+         "mohabbat aur kamyabi se bhar de.")
     ]
 
-    for title, message in duas:
+    for title,message in duas:
         st.markdown(f"""
         <div class="card">
-            <div class="small-title">{title}</div>
+            <h2>{title}</h2>
             <p class="subtitle">{message}</p>
         </div>
-        """, unsafe_allow_html=True)
+        """,unsafe_allow_html=True)
 
     st.markdown("""
-    <div class="card center">
-        <h1 style="font-size:36px;">آمین یا رب العالمین 🤍</h1>
-        <p class="subtitle">
-        May Allah accept every sincere dua made for you.
-        </p>
+    <div class="hero center">
+        <h1>آمین یا رب العالمین 🤍</h1>
+        <p>May every good dua become a reality.</p>
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
+
+    next_button("ONE MORE SPECIAL PAGE 🦋")
+    back_button()
 
 # ==========================================
-# PAGE 4: MEMORIES
+# PAGE 4: MEMORIES AND PHOTOS
 # ==========================================
 
-elif st.session_state.page == "Memories":
+elif st.session_state.step == 4:
 
     st.markdown("""
     <div class="hero">
-        <div class="eyebrow">A LITTLE APPRECIATION</div>
-        <h1>Our Special Bond 🦋</h1>
-        <p>
-        Some people are not just part of life,
-        they become part of our favourite memories.
-        </p>
+        <div class="eyebrow">SOME WORDS FOR MY BESTIE</div>
+        <h1>Our Beautiful Bond 🦋</h1>
+        <p>Some people make life a little more special.</p>
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
 
-    st.markdown(f"""
+    st.markdown("""
     <div class="card">
-        <h2>Dear {FRIEND_NAME} 💗</h2>
+        <h2>Dear Ruhii 💗</h2>
         <p class="subtitle">
         Life mein bohat se log milte hain,
-        lekin har koi special nahi hota.
+        lekin kuch log apni jagah alag bana lete hain.
         <br><br>
-        Some people leave beautiful memories,
-        some teach us important lessons,
-        and some make us smile without even trying.
+        I hope tumhari life mein hamesha beautiful moments,
+        genuine people aur endless happiness rahe.
         <br><br>
-        I hope tumhari life mein hamesha aise moments
-        aate rahein jo tumhein genuinely happy karein.
+        Apne dreams kabhi mat chorna,
+        apni worth kabhi mat bhoolna
+        aur apni smile ko kabhi lose mat karna.
         <br><br>
-        Chahe life kitni bhi busy ho jaye,
-        apni happiness, apni self-respect
-        aur apne dreams ko kabhi ignore mat karna.
-        <br><br>
-        You deserve genuine happiness and beautiful things.
+        You are special and you deserve to be happy.
         </p>
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
 
     st.markdown("""
     <div class="card center">
-        <h2>Little Friendship Quotes 🌸</h2>
-        <p class="quote">
-        "Some people make life a little more beautiful."
-        </p>
-        <p class="quote">
-        "Real connections are remembered, not measured."
-        </p>
-        <p class="quote">
-        "A beautiful friendship is a blessing."
-        </p>
-        <p class="quote">
-        "Distance and time cannot erase genuine memories."
+        <h2>Our Little Memory Gallery 📸</h2>
+        <p>
+        Add your favourite pictures together here!
         </p>
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
+
+    photos=st.file_uploader(
+        "Upload 2-3 favourite pictures",
+        type=["jpg","jpeg","png","webp"],
+        accept_multiple_files=True,
+        key="ruhi_photos"
+    )
+
+    if photos:
+        for i in range(0,len(photos),2):
+            cols=st.columns(2)
+            for j in range(2):
+                if i+j < len(photos):
+                    with cols[j]:
+                        st.image(
+                            photos[i+j],
+                            use_container_width=True,
+                            caption="A beautiful memory 💗"
+                        )
 
     st.markdown("""
     <div class="card center">
-        <h2>My Wish For You ✨</h2>
-        <p class="subtitle">
-        I hope you become the person you dream of being.
-        <br><br>
-        I hope you achieve things that make you proud.
-        <br><br>
-        And most importantly, I hope you never stop
-        loving the person you are becoming.
+        <h2>Friendship Quotes 🌸</h2>
+        <p class="quote">
+        "Some bonds are special because they are genuine."
+        </p>
+        <p class="quote">
+        "Good memories stay forever."
+        </p>
+        <p class="quote">
+        "A little kindness can make someone's whole day."
         </p>
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="card center">
-        <div style="font-size:35px;">💌 🌷 💗</div>
-        <h2>A Little Reminder</h2>
-        <p class="subtitle">
-        You matter. You are valuable.
-        Never let anyone make you feel otherwise.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    next_button("OPEN YOUR FINAL SURPRISE 🎁")
+    back_button()
 
 # ==========================================
-# PAGE 5: SURPRISE
+# PAGE 5: FINAL SURPRISE
 # ==========================================
 
-elif st.session_state.page == "Surprise":
+elif st.session_state.step == 5:
 
     st.markdown("""
     <div class="hero">
-        <div class="eyebrow">THE LAST PAGE HAS SOMETHING SPECIAL</div>
-        <h1>Your Birthday Surprise 🎁</h1>
-        <p>
-        A little gift, a little love
-        and a message just for you.
-        </p>
+        <div class="eyebrow">THE LAST SURPRISE IS HERE</div>
+        <h1>Something Special For You!</h1>
+        <p>A little gift with lots of love. 💗</p>
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
 
     st.markdown('<div class="gift">🎁</div>',
                 unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="center">
-        <h2>Ready to open your gift?</h2>
-        <p>Tap below and see what is waiting for you. 💗</p>
-    </div>
-    """, unsafe_allow_html=True)
+    a,b,c=st.columns([1,2,1])
 
-    col1, col2, col3 = st.columns([1, 2, 1])
-
-    with col2:
-        if st.button("🎀 OPEN YOUR SPECIAL GIFT 🎀"):
-            st.session_state.surprise_open = True
+    with b:
+        if st.button("🎀 OPEN YOUR GIFT 🎀"):
+            st.session_state.gift_open=True
             st.balloons()
             st.snow()
 
-    if st.session_state.surprise_open:
+    if st.session_state.gift_open:
 
-        st.markdown(f"""
-        <div class="card center">
-            <div style="font-size:60px;">🎂💗🌸</div>
-            <h1>Happy Birthday {FRIEND_NAME}!</h1>
-            <h2>You Are Truly Special!</h2>
+        st.markdown("""
+        <div class="hero">
+            <div class="cake">🎂</div>
+            <h1>Happy Birthday My Dear Bestiee!</h1>
+            <h2>Ruhii! 💗</h2>
             <p class="subtitle">
-            I hope this new chapter of your life brings
-            you more happiness than you can imagine.
+            I hope tumhari life ka har naya chapter
+            pehle se zyada beautiful ho.
             <br><br>
-            May every morning bring you hope,
-            every challenge make you stronger
-            and every night give you peace.
+            May Allah tumhari har achi wish poori kare,
+            tumhein bohat saari khushiyan de
+            aur hamesha apni hifazat mein rakhe.
             <br><br>
-            Tumhari har achi wish poori ho,
-            tumhare har din mein khushi ho
-            aur tumhara future bohat bright ho.
+            Keep smiling, keep shining
+            and never stop believing in yourself.
             <br><br>
-            Never stop smiling, never stop dreaming
-            and never forget your worth.
-            <br><br>
-            Sending you lots of love,
-            duas and best wishes! 💕
+            You deserve the world and all its beautiful things!
             </p>
             <h2>Stay Blessed Always! 🤲</h2>
         </div>
-        """, unsafe_allow_html=True)
+        """,unsafe_allow_html=True)
 
     st.write("")
 
-    st.markdown("""
-    <div class="card center">
-        <h2>💌 One Last Thing...</h2>
-        <p class="subtitle">
-        This website may have five pages,
-        but my good wishes for you are endless.
-        <br><br>
-        I hope jab bhi tum is website ko dekho,
-        tumhare face par ek pyari si smile aa jaye.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if st.button("💗 Read Your Personal Birthday Letter"):
+    if st.button("💌 READ YOUR PERSONAL LETTER"):
 
         st.session_state.letter_open = not st.session_state.letter_open
 
@@ -702,42 +617,74 @@ elif st.session_state.page == "Surprise":
 
         st.markdown(f"""
         <div class="card center">
-            <h1>Dear {FRIEND_NAME},</h1>
+            <h1>Dear Ruhii, 💗</h1>
             <p class="subtitle">
-            Aaj tumhara special day hai, and I just want
-            to say that I genuinely wish the best for you.
+            Aaj tumhara birthday hai aur main chahta hoon
+            ke tumhara din bohat beautiful guzray.
             <br><br>
-            Life hamesha perfect nahi hoti,
-            but I hope tumhein har difficult moment ke baad
-            ek beautiful reason mile to smile again.
+            I genuinely wish that you achieve everything
+            you dream about.
             <br><br>
-            Apne dreams ke liye mehnat karna,
-            apni value kabhi kam mat samajhna
-            aur hamesha apne liye bhi time nikalna.
+            Life mein ups and downs aate rehte hain,
+            but I hope tum hamesha strong raho
+            aur apni happiness ko priority do.
             <br><br>
-            May Allah always guide you,
-            protect you and bless you with everything
-            that is truly good for you.
+            May Allah bless you with everything
+            that is good for your duniya and akhirah.
             <br><br>
-            Once again, Happy Birthday!
+            Once again, Happy Birthday My Dear Bestiee!
             <br><br>
-            With best wishes and duas,
+            With lots of love and duas,
             <br>
             <b>{YOUR_NAME}</b> 🎀
             </p>
         </div>
-        """, unsafe_allow_html=True)
+        """,unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="card center">
+        <h2>One Last Reminder 💕</h2>
+        <p class="subtitle">
+        This website has an ending,
+        but my good wishes for you don't.
+        <br><br>
+        Keep smiling, Ruhii!
+        </p>
+        <div style="font-size:40px;">💗 🌸 🎀 🦋</div>
+    </div>
+    """,unsafe_allow_html=True)
+
+    if st.button("RESTART YOUR BIRTHDAY JOURNEY 🔄"):
+        st.session_state.step=0
+        st.session_state.gift_open=False
+        st.session_state.letter_open=False
+        st.rerun()
+
+    back_button()
 
 # ==========================================
-# FOOTER
+# PROGRESS AND FOOTER
 # ==========================================
+
+if st.session_state.step > 0:
+
+    st.markdown("---")
+
+    if st.session_state.step <= 5:
+        st.markdown(
+            f'<div class="progress-text">Birthday Journey: '
+            f'{st.session_state.step}/5 💗</div>',
+            unsafe_allow_html=True
+        )
+
+        st.progress(st.session_state.step/5)
 
 st.markdown("""
 <div class="footer">
-    🎀 Made with love, duas and lots of pink sprinkles 🎀
+    🎀 Made with love, prayers and happiness 🎀
     <br><br>
-    A special birthday world for Ruhi 💗
+    A little magical world for Ruhii 💗
     <br>
-    Stay Happy. Stay Blessed. Keep Shining. ✨
+    Keep Smiling. Keep Shining. ✨
 </div>
-""", unsafe_allow_html=True)
+""",unsafe_allow_html=True)
