@@ -42,136 +42,48 @@ if "letter_open" not in st.session_state:
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 .stApp {
-    background:
-    radial-gradient(circle at 10% 10%, #ffe1ed, transparent 35%),
-    radial-gradient(circle at 90% 15%, #e8d9ff, transparent 35%),
-    linear-gradient(135deg,#fff7fa,#fceaf3,#f7edff);
     font-family: 'Poppins', sans-serif;
 }
 
-header, footer, #MainMenu {
-    visibility: hidden;
-}
-
-.block-container {
-    max-width: 1050px;
-    padding-top: 2rem;
-    padding-bottom: 3rem;
-}
-
-h1,h2,h3 {
+h1, h2, h3 {
     font-family: 'Playfair Display', serif !important;
-    color: #b83d79 !important;
-}
-
-p {
-    color: #80536d;
-    line-height: 1.9;
-}
-
-.hero {
-    background: rgba(255,255,255,0.82);
-    border: 2px solid white;
-    border-radius: 32px;
-    padding: 45px 22px;
-    text-align: center;
-    box-shadow: 0 12px 40px rgba(195,80,140,.14);
-    animation: appear 1s ease;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 .hero h1 {
-    font-size: clamp(35px,7vw,65px);
-    background: linear-gradient(90deg,#df5796,#a27bd9);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.card {
-    background: rgba(255,255,255,.88);
-    border: 1px solid #f6cfe1;
-    border-radius: 25px;
-    padding: 25px;
-    margin: 18px 0;
-    box-shadow: 0 8px 25px rgba(180,75,130,.09);
-    animation: appear 0.9s ease;
-}
-
-.center {
-    text-align: center;
-}
-
-.eyebrow {
-    color: #ca6598;
-    letter-spacing: 3px;
-    font-size: 12px;
+    font-family: 'Playfair Display', serif !important;
+    font-size: clamp(38px, 7vw, 68px);
     font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.special-text {
+    font-family: 'Dancing Script', cursive !important;
+    font-size: clamp(38px, 6vw, 58px);
+    color: #d34f91;
+    font-weight: 700;
+    text-align: center;
 }
 
 .subtitle {
+    font-family: 'Poppins', sans-serif;
     font-size: 16px;
-    line-height: 2;
-}
-
-.heart {
-    display: inline-block;
-    font-size: 55px;
-    animation: beat 1.5s infinite;
-}
-
-.cake {
-    font-size: 100px;
-    animation: bounce 2s infinite;
-}
-
-.gift {
-    font-size: 110px;
-    animation: gift 1.8s infinite;
-    text-align: center;
+    font-weight: 400;
+    line-height: 2.1;
+    letter-spacing: 0.2px;
 }
 
 .quote {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    font-style: italic;
-    color: #ae5684;
-    text-align: center;
+    font-family: 'Dancing Script', cursive;
+    font-size: 27px;
+    color: #b64279;
 }
 
-.stButton > button {
-    background: linear-gradient(90deg,#e65d9c,#a77bd7);
-    color: white;
-    border: 2px solid white;
-    border-radius: 40px;
-    padding: 13px 20px;
-    font-weight: 700;
-    width: 100%;
-    min-height: 48px;
-    box-shadow: 0 6px 20px rgba(190,70,130,.22);
-    transition: .3s;
-}
-
-.stButton > button:hover {
-    transform: scale(1.04);
-    background: linear-gradient(90deg,#d9478b,#9364ca);
-    color: white;
-}
-
-.progress-text {
-    text-align: center;
-    color: #b85b8a;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-
-.footer {
-    text-align: center;
-    padding: 30px 10px;
-    color: #b65d8c;
-    font-size: 13px;
-}
 
 @keyframes appear {
     from {opacity:0; transform:translateY(25px);}
