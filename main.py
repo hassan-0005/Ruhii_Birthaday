@@ -43,6 +43,7 @@ if "letter_open" not in st.session_state:
 st.markdown("""
 <style>
 
+
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 .stApp {
@@ -83,30 +84,6 @@ h1, h2, h3 {
     font-size: 27px;
     color: #b64279;
 }
-
-
-@keyframes appear {
-    from {opacity:0; transform:translateY(25px);}
-    to {opacity:1; transform:translateY(0);}
-}
-
-@keyframes beat {
-    0%,100% {transform:scale(1);}
-    50% {transform:scale(1.2);}
-}
-
-@keyframes bounce {
-    0%,100% {transform:translateY(0);}
-    50% {transform:translateY(-15px);}
-}
-
-@keyframes gift {
-    0%,100% {transform:rotate(-5deg) scale(1);}
-    50% {transform:rotate(5deg) scale(1.1);}
-}
-
-</style>
-""", unsafe_allow_html=True)
 
 # ==========================================
 # LIVE FLOATING HEARTS
