@@ -1,991 +1,1108 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+import streamlit as st
+import streamlit.components.v1 as components
+import random
+import time
+import os
+import base64
+from datetime import datetime
 
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Heart,
-  Volume2,
-  VolumeX,
-  ChevronRight,
-  ChevronLeft,
-  Home,
-  Check,
-  Copy,
-  Code,
-  Lock,
-  Unlock,
-  Clock,
-  Sparkles,
-  Camera,
-  Trash2
-} from 'lucide-react';
+# --- PAGE CONFIGURATION ---
+st.set_page_config(
+    page_title="A Little World Made for Ruhii 💗",
+    page_icon="🎂",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
-interface ActivityItem {
-  time: string;
-  event: string;
+# --- IMAGE LOADER (FOR LOCAL & GITHUB / STREAMLIT CLOUD DEPLOYMENTS) ---
+def load_image_base64(path_candidates):
+    """Finds and encodes image to base64 from a list of candidate paths"""
+    for p in path_candidates:
+        if os.path.exists(p):
+            try:
+                with open(p, "rb") as f:
+                    encoded = base64.b64encode(f.read()).decode()
+                    return f"data:image/jpeg;base64,{encoded}"
+            except Exception:
+                pass
+    return ""
+
+RUHII_PORTRAIT_B64 = load_image_base64([
+    "ruhii.jpg",
+    "public/ruhii.jpg",
+    "public/assets/aistudio/IMG-20260614-WA0010_9d360bed.jpg",
+    "assets/aistudio/IMG-20260614-WA0010_9d360bed.jpg"
+])
+
+GALLERY_1_B64 = load_image_base64([
+    "gallery_1.jpg",
+    "public/gallery_1.jpg",
+    "public/assets/aistudio/IMG-20260614-WA0008_2481bf8f.jpg",
+    "assets/aistudio/IMG-20260614-WA0008_2481bf8f.jpg"
+])
+
+GALLERY_2_B64 = load_image_base64([
+    "gallery_2.jpg",
+    "public/gallery_2.jpg",
+    "public/assets/aistudio/WhatsApp_Image_2026-08-22_at_6.52.11_PM__1__e0871e45.jpeg",
+    "assets/aistudio/WhatsApp_Image_2026-08-22_at_6.52.11_PM__1__e0871e45.jpeg"
+])
+
+GALLERY_3_B64 = load_image_base64([
+    "gallery_3.jpg",
+    "public/gallery_3.jpg",
+    "public/assets/aistudio/WhatsApp_Image_2026-08-22_at_6.52.11_PM_1dcb8110.jpeg",
+    "assets/aistudio/WhatsApp_Image_2026-08-22_at_6.52.11_PM_1dcb8110.jpeg"
+])
+
+GALLERY_4_B64 = load_image_base64([
+    "gallery_4.jpg",
+    "public/gallery_4.jpg",
+    "public/assets/aistudio/WhatsApp_Image_2026-08-22_at_6.52.02_PM_52075a0d.jpeg",
+    "assets/aistudio/WhatsApp_Image_2026-08-22_at_6.52.02_PM_52075a0d.jpeg"
+])
+
+GALLERY_ITEMS = [
+    {
+        "img": GALLERY_1_B64,
+        "title": "Royal Traditional Charm 👑",
+        "tagline": "Velvet elegance & royal grace • MashAllah pure queen vibes!"
+    },
+    {
+        "img": GALLERY_2_B64,
+        "title": "Radiant in Red ❤️",
+        "tagline": "That sweet, innocent smile that lights up the whole room! ✨"
+    },
+    {
+        "img": GALLERY_3_B64,
+        "title": "Peaceful in White 🕊️",
+        "tagline": "Sukoon aur Saadgi ki misaal • An angel in human form 🤍"
+    },
+    {
+        "img": GALLERY_4_B64,
+        "title": "The Sweet Dark Angel 🖤",
+        "tagline": "Masoomiyat + thori si nautanki = 100% certified Ruhii! 🌸"
+    }
+]
+
+# --- SESSION STATE INITIALIZATION & TIME TRACKING ---
+if "countdown_done" not in st.session_state:
+    st.session_state.countdown_done = False
+if "entered_world" not in st.session_state:
+    st.session_state.entered_world = False
+if "current_page" not in st.session_state:
+    st.session_state.current_page = 1
+if "compliment" not in st.session_state:
+    st.session_state.compliment = ""
+if "show_hug" not in st.session_state:
+    st.session_state.show_hug = False
+
+# Secret page & activity tracker state
+if "show_secret_page" not in st.session_state:
+    st.session_state.show_secret_page = False
+if "secret_unlocked" not in st.session_state:
+    st.session_state.secret_unlocked = False
+if "activity_log" not in st.session_state:
+    st.session_state.activity_log = [
+        {"time": datetime.now().strftime("%I:%M:%S %p"), "event": "Website opened by Ruhii 🌸"}
+    ]
+if "page_enter_time" not in st.session_state:
+    st.session_state.page_enter_time = time.time()
+
+def log_activity(event_description):
+    """Log an activity event with formatted timestamp"""
+    st.session_state.activity_log.append({
+        "time": datetime.now().strftime("%I:%M:%S %p"),
+        "event": event_description
+    })
+
+def switch_page(new_page):
+    """Switch page and calculate time spent on previous page"""
+    time_spent = int(time.time() - st.session_state.page_enter_time)
+    page_names = {
+        1: "Letter (Birthday Wishes)",
+        2: "Duas & Prayers",
+        3: "Royal Gallery (Ruhii's Photos)",
+        4: "Masti & Pagalpanti",
+        5: "Special Message & Hug"
+    }
+    old_name = page_names.get(st.session_state.current_page, f"Page {st.session_state.current_page}")
+    new_name = page_names.get(new_page, f"Page {new_page}")
+
+    log_activity(f"Stayed on {old_name} for {time_spent} seconds")
+    log_activity(f"Opened {new_name} ➔")
+
+    st.session_state.current_page = new_page
+    st.session_state.page_enter_time = time.time()
+    st.session_state.show_hug = False
+
+# --- COMPLIMENTS REPERTOIRE ---
+COMPLIMENTS = [
+    "Tumhari smile literally kisi ka bhi kharab mood 2 second mein fresh kar sakti hai! ✨",
+    "Tum cute bhi ho, sweet bhi ho, aur certified 24/7 troublemaker bhi! 😇😈",
+    "Tumhari friendship Netflix ke premium 4K subscription jaisi hai — priceless & irreplaceable! 💎",
+    "Tumhare jaisi pagal aur loving dost milna sirf kismat walon ka naseeb hota hai! 🍀",
+    "Duniya ek taraf, aur Ruhii ki drama queen vibes ek taraf! Full cinematic experience! 🎬👑",
+    "Allah ne tumhe banate waqt thori zyada sweetness aur bohat saari masti daal di thi! 🍬",
+    "Tumhare saath 5 minute baat karne se saara stress gayab ho jata hai. Free therapy! 🌸",
+    "Tumhare jokes chahe kitne bhi lame hon, tumhari hansi dekh kar sabko hansi aa hi jati hai! 🤣",
+    "Ek hoti hain achi dost, aur ek hoti hai Ruhii — purest soul with a heart of pure gold! 💖",
+    "Jitna bhi nakhre dikha lo madam, tumhari kindness humesha dil jeet leti hai! 🕊️"
+]
+
+# --- DUAS WITH SWEET EMOJIS (NO NUMBERING) ---
+DUAS_DATA = [
+    {"start": "🤲 🌸", "text": "Allah tumhari har jaiz dua qabool farmaye.", "end": "🤍"},
+    {"start": "🌿 💖", "text": "Allah tumhari zindagi ko sehat, sukoon, khushiyon aur barkaton se bhar de.", "end": "✨"},
+    {"start": "🕊️ 🌷", "text": "Tumhare har mushkil raste ko asaan farmaye.", "end": "💫"},
+    {"start": "👑 🌟", "text": "Tumhein duniya aur akhirat dono mein kamyabi ata farmaye.", "end": "🌙"},
+    {"start": "🥺 🌺", "text": "Tumhari aankhon mein hamesha khushi ke aansu hon, gham ke nahi.", "end": "💗"},
+    {"start": "🛡️ 🕊️", "text": "Allah tumhein buri nazar, pareshani aur har takleef se mehfooz rakhe.", "end": "🤲"}
+]
+
+# --- UNIVERSAL STYLING & FONTS ---
+UNIVERSAL_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Comfortaa:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Outfit:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Quicksand:wght@400;500;600;700&display=swap');
+
+/* Hide Streamlit default UI chrome */
+#MainMenu, header, footer, .stDeployButton {
+    display: none !important;
+    visibility: hidden !important;
+}
+div[data-testid="stToolbar"] {
+    display: none !important;
 }
 
-const COMPLIMENTS = [
-  "Tumhari smile literally kisi ka bhi kharab mood 2 second mein fresh kar sakti hai! ✨",
-  "Tum cute bhi ho, sweet bhi ho, aur certified 24/7 troublemaker bhi! 😇😈",
-  "Tumhari friendship Netflix ke premium 4K subscription jaisi hai — priceless & irreplaceable! 💎",
-  "Tumhare jaisi pagal aur loving dost milna sirf kismat walon ka naseeb hota hai! 🍀",
-  "Duniya ek taraf, aur Ruhii ki drama queen vibes ek taraf! Full cinematic experience! 🎬👑",
-  "Allah ne tumhe banate waqt thori zyada sweetness aur bohat saari masti daal di thi! 🍬",
-  "Tumhare saath 5 minute baat karne se saara stress gayab ho jata hai. Free therapy! 🌸",
-  "Tumhare jokes chahe kitne bhi lame hon, tumhari hansi dekh kar sabko hansi aa hi jati hai! 🤣",
-  "Ek hoti hain achi dost, aur ek hoti hai Ruhii — purest soul with a heart of pure gold! 💖",
-  "Jitna bhi nakhre dikha lo madam, tumhari kindness humesha dil jeet leti hai! 🕊️"
-];
+/* Background & Body */
+.stApp {
+    background: linear-gradient(135deg, #FFF0F5 0%, #F5E6FA 40%, #FFE4E1 70%, #FFF5EE 100%);
+    font-family: 'Outfit', sans-serif;
+    color: #4A3E4E;
+    overflow-x: hidden;
+}
 
-const DUAS_WITH_EMOJIS = [
-  { text: "Allah tumhari har jaiz dua qabool farmaye.", startEmoji: "🤲 🌸", endEmoji: "🤍" },
-  { text: "Allah tumhari zindagi ko sehat, sukoon, khushiyon aur barkaton se bhar de.", startEmoji: "🌿 💖", endEmoji: "✨" },
-  { text: "Tumhare har mushkil raste ko asaan farmaye.", startEmoji: "🕊️ 🌷", endEmoji: "💫" },
-  { text: "Tumhein duniya aur akhirat dono mein kamyabi ata farmaye.", startEmoji: "👑 🌟", endEmoji: "🌙" },
-  { text: "Tumhari aankhon mein hamesha khushi ke aansu hon, gham ke nahi.", startEmoji: "🥺 🌺", endEmoji: "💗" },
-  { text: "Allah tumhein buri nazar, pareshani aur har takleef se mehfooz rakhe.", startEmoji: "🛡️ 🕊️", endEmoji: "🤲" }
-];
+/* Main Container Padding */
+.block-container {
+    padding-top: 1.2rem !important;
+    padding-bottom: 3.5rem !important;
+    max-width: 820px !important;
+}
 
-const RUHII_GALLERY = [
-  {
-    src: "/gallery_1.jpg",
-    title: "Royal Traditional Charm 👑",
-    tagline: "Velvet elegance & royal grace • MashAllah pure queen vibes!"
-  },
-  {
-    src: "/gallery_2.jpg",
-    title: "Radiant in Red ❤️",
-    tagline: "That sweet, innocent smile that lights up the whole room! ✨"
-  },
-  {
-    src: "/gallery_3.jpg",
-    title: "Peaceful in White 🕊️",
-    tagline: "Sukoon aur Saadgi ki misaal • An angel in human form 🤍"
-  },
-  {
-    src: "/gallery_4.jpg",
-    title: "The Sweet Dark Angel 🖤",
-    tagline: "Masoomiyat + thori si nautanki = 100% certified Ruhii! 🌸"
-  }
-];
+/* Glassmorphism Cards */
+.glass-card {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 28px;
+    border: 1.5px solid rgba(255, 215, 230, 0.75);
+    padding: 30px 28px;
+    box-shadow: 0 15px 35px rgba(220, 160, 195, 0.22), 0 5px 15px rgba(255, 255, 255, 0.7) inset;
+    margin-bottom: 24px;
+    transition: all 0.4s ease;
+}
 
-export default function App() {
-  const [countdownStep, setCountdownStep] = useState<number>(0);
-  const [enteredWorld, setEnteredWorld] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [compliment, setCompliment] = useState<string>('');
-  const [showHug, setShowHug] = useState<boolean>(false);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [showPythonCodeModal, setShowPythonCodeModal] = useState<boolean>(false);
-  const [copiedCode, setCopiedCode] = useState<boolean>(false);
+.glass-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 45px rgba(220, 140, 185, 0.28), 0 5px 20px rgba(255, 255, 255, 0.8) inset;
+}
 
-  // Secret page tracking state
-  const [showSecretModal, setShowSecretModal] = useState<boolean>(false);
-  const [secretUnlocked, setSecretUnlocked] = useState<boolean>(false);
-  const [passwordInput, setPasswordInput] = useState<string>('');
-  const [passwordError, setPasswordError] = useState<string>('');
-  const [activityLog, setActivityLog] = useState<ActivityItem[]>([
-    { time: new Date().toLocaleTimeString(), event: "Website opened by Ruhii 🌸" }
-  ]);
-  const pageEnterTimeRef = useRef<number>(Date.now());
+/* Typography styles */
+.title-greatvibes {
+    font-family: 'Great Vibes', cursive;
+    font-size: 3.8rem;
+    font-weight: 700;
+    color: #C2417C;
+    text-shadow: 0 4px 18px rgba(219, 39, 119, 0.25);
+    line-height: 1.2;
+    text-align: center;
+    margin-bottom: 6px;
+}
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
+.subtitle-caveat {
+    font-family: 'Caveat', cursive;
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #6A1B9A;
+    text-align: center;
+    margin-bottom: 22px;
+    line-height: 1.3;
+}
 
-  const logEvent = (msg: string) => {
-    setActivityLog(prev => [
-      ...prev,
-      { time: new Date().toLocaleTimeString(), event: msg }
-    ]);
-  };
+.letter-caveat {
+    font-family: 'Caveat', cursive;
+    font-size: 1.85rem;
+    line-height: 1.7;
+    color: #4A2840;
+}
 
-  const handlePageSwitch = (newPage: number) => {
-    const elapsedSec = Math.round((Date.now() - pageEnterTimeRef.current) / 1000);
-    const pageNames: Record<number, string> = {
-      1: "Letter (Birthday Wishes)",
-      2: "Duas & Prayers",
-      3: "Royal Gallery (Ruhii's Photos)",
-      4: "Masti & Pagalpanti",
-      5: "Special Message & Hug"
-    };
-    logEvent(`Stayed on ${pageNames[currentPage] || 'Page ' + currentPage} for ${elapsedSec}s`);
-    logEvent(`Opened ${pageNames[newPage] || 'Page ' + newPage} ➔`);
-    setCurrentPage(newPage);
-    setShowHug(false);
-    pageEnterTimeRef.current = Date.now();
-  };
+/* Ultra Stylish Bulletin Card */
+.stylish-bulletin {
+    background: linear-gradient(135deg, rgba(255, 240, 246, 0.95) 0%, rgba(255, 245, 250, 0.95) 100%);
+    border: 2px solid rgba(240, 98, 146, 0.6);
+    border-radius: 24px;
+    padding: 22px 26px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 25px rgba(240, 98, 146, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    position: relative;
+    overflow: hidden;
+}
 
-  const playTuneNote = (frequency: number, duration: number, delay = 0) => {
-    if (isMuted) return;
-    try {
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-      }
-      const ctx = audioCtxRef.current;
-      setTimeout(() => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(frequency, ctx.currentTime);
-        gain.gain.setValueAtTime(0.09, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + duration);
-      }, delay);
-    } catch {
-      // Audio permission
-    }
-  };
+.bulletin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #FF4081, #E91E63);
+    color: white;
+    border-radius: 50px;
+    font-family: 'Comfortaa', cursive;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.35);
+    margin-bottom: 12px;
+}
 
-  const playCelebrationChime = () => {
-    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
-    notes.forEach((freq, i) => playTuneNote(freq, 0.5, i * 140));
-  };
+.bulletin-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    color: #4A152E;
+    line-height: 1.6;
+    font-weight: 600;
+}
 
-  useEffect(() => {
-    if (enteredWorld) return;
+/* Portrait Glowing Ring */
+.portrait-glow-ring {
+    position: relative;
+    display: inline-block;
+    padding: 6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF4081, #AB47BC, #FF69B4, #FFA07A);
+    box-shadow: 0 0 35px rgba(255, 64, 129, 0.5), 0 0 15px rgba(171, 71, 188, 0.4);
+    animation: portraitPulse 3s ease-in-out infinite;
+}
 
-    if (countdownStep === 0) {
-      const timer = setTimeout(() => {
-        setCountdownStep(1);
-        playTuneNote(440, 0.3);
-      }, 2000);
-      return () => clearTimeout(timer);
-    } else if (countdownStep === 1) {
-      const timer = setTimeout(() => {
-        setCountdownStep(2);
-        playTuneNote(493.88, 0.3);
-      }, 1400);
-      return () => clearTimeout(timer);
-    } else if (countdownStep === 2) {
-      const timer = setTimeout(() => {
-        setCountdownStep(3);
-        playTuneNote(523.25, 0.3);
-      }, 1400);
-      return () => clearTimeout(timer);
-    } else if (countdownStep === 3) {
-      const timer = setTimeout(() => {
-        setCountdownStep(4);
-        playCelebrationChime();
-        logEvent("Revealed GRAND BIRTHDAY SCREEN 🎂");
-      }, 1400);
-      return () => clearTimeout(timer);
-    }
-  }, [countdownStep, enteredWorld]);
+@keyframes portraitPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(255, 64, 129, 0.5); }
+    50% { transform: scale(1.03); box-shadow: 0 0 40px rgba(233, 30, 99, 0.7); }
+}
 
-  const toggleSound = () => {
-    if (isMuted) {
-      setIsMuted(false);
-      setTimeout(() => playCelebrationChime(), 50);
-    } else {
-      setIsMuted(true);
-    }
-  };
+.portrait-img {
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 4px solid #FFFFFF;
+}
 
-  const handleCopyCode = () => {
-    fetch('/app.py')
-      .then(r => r.text())
-      .then(text => {
-        navigator.clipboard.writeText(text);
-        setCopiedCode(true);
-        setTimeout(() => setCopiedCode(false), 2500);
-      })
-      .catch(() => {
-        setCopiedCode(true);
-        setTimeout(() => setCopiedCode(false), 2500);
-      });
-  };
+/* Gallery Photo Cards */
+.gallery-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 24px;
+    padding: 16px;
+    border: 2px solid rgba(255, 182, 193, 0.7);
+    box-shadow: 0 10px 25px rgba(220, 160, 195, 0.2);
+    margin-bottom: 20px;
+    transition: all 0.35s ease;
+    text-align: center;
+}
+.gallery-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 35px rgba(219, 39, 119, 0.25);
+    border-color: #F06292;
+}
+.gallery-img-wrapper {
+    width: 100%;
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.gallery-img-wrapper img {
+    width: 100%;
+    height: 380px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+.gallery-card:hover .gallery-img-wrapper img {
+    transform: scale(1.03);
+}
 
-  const getThemeParticles = () => {
-    if (!enteredWorld) return ['💖', '🌸', '✨', '🎈', '🎀', '💗', '👑'];
-    switch (currentPage) {
-      case 1:
-        return ['💖', '🌸', '🌷', '✨', '💌', '🎀', '🌺'];
-      case 2:
-        return ['✨', '⭐', '🌟', '🤍', '🌙', '💫', '🕊️'];
-      case 3:
-        return ['👑', '📸', '✨', '💖', '🌸', '💎', '🌷'];
-      case 4:
-        return ['🎉', '🎈', '🤣', '💖', '🧁', '⭐', '🎊'];
-      case 5:
-        return ['💗', '✨', '💌', '🌹', '💞', '🌸', '💐'];
-      default:
-        return ['💖', '✨', '🌸'];
-    }
-  };
+/* Custom Streamlit Buttons */
+div.stButton > button {
+    background: linear-gradient(135deg, #FF69B4 0%, #DA70D6 50%, #FF8DA1 100%) !important;
+    color: #FFFFFF !important;
+    font-family: 'Comfortaa', cursive !important;
+    font-weight: 700 !important;
+    font-size: 1.05rem !important;
+    padding: 0.65rem 1.6rem !important;
+    border-radius: 50px !important;
+    border: none !important;
+    box-shadow: 0 8px 22px rgba(219, 39, 119, 0.35) !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    width: 100% !important;
+    letter-spacing: 0.5px !important;
+}
 
-  return (
-    <div className="relative min-h-screen overflow-x-hidden font-outfit text-slate-800 bg-gradient-to-br from-pink-50 via-purple-50 to-rose-50 pb-16 selection:bg-pink-300">
-      
-      {/* CONTINUOUS LIVE MOVING BACKGROUND EMOJIS (FALLING TOP TO BOTTOM LIKE SNOWFALL ACROSS FULL PAGE) */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden w-screen h-screen">
-        {Array.from({ length: 48 }).map((_, i) => {
-          const particles = getThemeParticles();
-          const symbol = particles[i % particles.length];
-          const leftPos = (i * 2.1) % 98;
-          const animDuration = 6.5 + (i % 8) * 1.3;
-          const delay = (i * 0.3) % 8;
-          const sizeClass = i % 3 === 0 ? 'text-3xl' : i % 2 === 0 ? 'text-2xl' : 'text-xl';
-          return (
-            <div
-              key={i}
-              className={`absolute select-none opacity-70 animate-snowfall ${sizeClass}`}
-              style={{
-                left: `${leftPos}vw`,
-                top: '-45px',
-                animationDuration: `${animDuration}s`,
-                animationDelay: `${delay}s`,
-                filter: 'drop-shadow(0 3px 10px rgba(244, 114, 182, 0.45))'
-              }}
-            >
-              {symbol}
-            </div>
-          );
-        })}
-      </div>
+div.stButton > button:hover {
+    transform: scale(1.03) translateY(-2px) !important;
+    box-shadow: 0 12px 28px rgba(219, 39, 119, 0.48) !important;
+    color: #FFFFFF !important;
+}
 
-      {/* FLOATING ACTION TOOLBAR */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        <button
-          onClick={toggleSound}
-          title={isMuted ? "Unmute celebratory chimes" : "Mute audio"}
-          className="p-2.5 rounded-full bg-white/85 backdrop-blur-md border border-pink-200 text-pink-700 shadow-md hover:bg-pink-50 hover:scale-105 transition-all"
-        >
-          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} className="animate-pulse" />}
-        </button>
+div.stButton > button:active {
+    transform: scale(0.98) !important;
+}
 
-        <button
-          onClick={() => setShowPythonCodeModal(true)}
-          title="Inspect updated app.py & requirements.txt"
-          className="px-3 py-2 rounded-full bg-white/85 backdrop-blur-md border border-pink-200 text-pink-700 shadow-md hover:bg-pink-50 hover:scale-105 transition-all flex items-center gap-1.5 text-xs font-bold font-comfortaa"
-        >
-          <Code size={16} />
-          <span>Streamlit app.py</span>
-        </button>
-      </div>
+/* Dua Cards */
+.dua-card-new {
+    background: rgba(255, 255, 255, 0.9);
+    border-left: 5px solid #BA68C8;
+    border-radius: 20px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 6px 18px rgba(200, 160, 220, 0.18);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.dua-card-new:hover {
+    transform: translateX(6px);
+    background: #FFFFFF;
+    box-shadow: 0 10px 24px rgba(186, 104, 200, 0.28);
+}
+.dua-text-stylish {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: #3E1E45;
+    line-height: 1.4;
+    flex-grow: 1;
+}
 
-      {/* ========================================================================= */}
-      {/* SECTION 1: COUNTDOWN & GRAND OPENING EXPERIENCE */}
-      {/* ========================================================================= */}
-      {!enteredWorld && (
-        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
-          {countdownStep === 0 && (
-            <div className="text-center max-w-lg mx-auto p-8 rounded-3xl glass-panel shadow-2xl animate-fade-in">
-              <div className="text-6xl mb-4 animate-float-gentle">👀 💗</div>
-              <h1 className="font-greatvibes text-6xl sm:text-7xl text-pink-600 font-bold mb-3 drop-shadow-sm">
-                Hey Ruhii!
-              </h1>
-              <p className="font-comfortaa text-lg sm:text-xl font-bold text-purple-900 mb-2">
-                Someone has a very special surprise for you!
-              </p>
-              <p className="text-sm text-pink-700 italic font-outfit">
-                Hold your breath! Starting the magic countdown...
-              </p>
-            </div>
-          )}
+/* Decent, Clean & Elegant Pagalpanti Quotes Cards */
+.masti-card-decent {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 245, 240, 0.92) 100%);
+    border: 1.5px solid rgba(255, 183, 161, 0.6);
+    border-radius: 20px;
+    padding: 18px 22px;
+    margin-bottom: 15px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.08rem;
+    font-weight: 500;
+    color: #3D2232;
+    line-height: 1.6;
+    box-shadow: 0 6px 18px rgba(255, 171, 145, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s ease;
+}
+.masti-card-decent:hover {
+    transform: translateY(-2px);
+    border-color: #FF8A65;
+    box-shadow: 0 10px 24px rgba(255, 138, 101, 0.22);
+}
 
-          {countdownStep === 1 && (
-            <div className="text-center p-8 rounded-3xl glass-panel shadow-2xl">
-              <span className="font-comfortaa text-sm font-bold tracking-widest text-purple-600 uppercase">
+/* Animations */
+@keyframes heartPulse {
+    0% { transform: scale(1); }
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.22); }
+    60% { transform: scale(1); }
+}
+.pulsing-heart {
+    display: inline-block;
+    animation: heartPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes softFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+}
+.soft-float {
+    animation: softFloat 4s ease-in-out infinite;
+}
+</style>
+"""
+st.markdown(UNIVERSAL_CSS, unsafe_allow_html=True)
+
+# --- COMPLETE FULL-PAGE CONTINUOUS LIVE MOVING EMOJI SNOWFALL (TOP TO BOTTOM) ---
+def render_complete_page_live_snowfall(theme="hearts"):
+    """Spans the entire screen with continuous live emoji snowfall falling top-to-bottom"""
+    if theme == "hearts":
+        particle_symbol = "['💖', '🌸', '✨', '💕', '🌷', '🎀', '💗', '🌺', '👑']"
+        theme_glow = "rgba(255, 182, 193, 0.45)"
+    elif theme == "stars":
+        particle_symbol = "['✨', '⭐', '🌟', '🤍', '🌙', '💫', '🕊️', '🌸', '💎']"
+        theme_glow = "rgba(218, 112, 214, 0.4)"
+    elif theme == "gallery":
+        particle_symbol = "['👑', '📸', '✨', '💖', '🌸', '💎', '🌷', '💐']"
+        theme_glow = "rgba(255, 192, 203, 0.45)"
+    elif theme == "confetti":
+        particle_symbol = "['🎉', '🎈', '🤣', '💖', '🧁', '⭐', '🎊', '🍰', '🎁']"
+        theme_glow = "rgba(255, 160, 122, 0.42)"
+    else:
+        particle_symbol = "['💗', '✨', '💌', '🌹', '💞', '🌸', '💐', '💖', '👑']"
+        theme_glow = "rgba(255, 105, 180, 0.45)"
+
+    html_code = f"""
+    <div id="fullpage-snowfall-canvas" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:0; overflow:hidden;"></div>
+    <script>
+    (function() {{
+        const container = document.getElementById('fullpage-snowfall-canvas');
+        if (!container) return;
+        const symbols = {particle_symbol};
+
+        function spawnFallingSnowEmoji() {{
+            const p = document.createElement('div');
+            const sym = symbols[Math.floor(Math.random() * symbols.length)];
+            p.innerText = sym;
+            p.style.position = 'absolute';
+            p.style.top = '-55px';
+            p.style.left = (Math.random() * 97) + 'vw';
+            p.style.fontSize = (Math.random() * 22 + 16) + 'px';
+            p.style.opacity = Math.random() * 0.65 + 0.35;
+            p.style.filter = 'drop-shadow(0 4px 12px {theme_glow})';
+            p.style.userSelect = 'none';
+            p.style.pointerEvents = 'none';
+
+            const duration = Math.random() * 5.5 + 5.5; // 5.5s to 11s smooth descent
+            const drift = (Math.random() - 0.5) * 190;
+            const rotation = (Math.random() - 0.5) * 540;
+
+            // Falling from top to bottom like snowfall!
+            p.animate([
+                {{ transform: 'translateY(0) translateX(0) rotate(0deg) scale(0.8)', opacity: p.style.opacity }},
+                {{ transform: `translateY(118vh) translateX(${{drift}}px) rotate(${{rotation}}deg) scale(1.15)`, opacity: 0 }}
+            ], {{
+                duration: duration * 1000,
+                easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                fill: 'forwards'
+            }});
+
+            container.appendChild(p);
+            setTimeout(() => {{ p.remove(); }}, duration * 1000);
+        }}
+
+        // Initial burst covering complete page height
+        for (let i = 0; i < 26; i++) {{
+            setTimeout(spawnFallingSnowEmoji, i * 140);
+        }}
+        // Continuous downward snowfall stream
+        setInterval(spawnFallingSnowEmoji, 320);
+    }})();
+    </script>
+    """
+    components.html(html_code, height=0, width=0)
+
+# --- CELEBRATORY CHIMES & BELLS ONLY (VOICE REMOVED AS REQUESTED) ---
+def play_celebration_bells():
+    """Play melodic celebratory chimes and bells via Web Audio API"""
+    chimes_js = """
+    <script>
+    (function() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {
+                const ctx = new AudioContext();
+                const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                notes.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.65);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.65);
+                    }, i * 140);
+                });
+            }
+        } catch(e) {
+            console.log(e);
+        }
+    })();
+    </script>
+    """
+    components.html(chimes_js, height=0, width=0)
+
+# ==============================================================================
+# 1. OPENING EXPERIENCE - AUTOMATIC COUNTDOWN & GRAND REVEAL WITH PHOTO
+# ==============================================================================
+if not st.session_state.entered_world:
+    render_complete_page_live_snowfall("hearts")
+
+    if not st.session_state.countdown_done:
+        countdown_placeholder = st.empty()
+
+        # Step 0: Welcome greeting
+        countdown_placeholder.markdown("""
+        <div style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 3.5rem; margin-bottom: 12px;" class="soft-float">👀 💗</div>
+            <h1 class="title-greatvibes" style="font-size: 4.5rem;">Hey Ruhii!</h1>
+            <p style="font-family: 'Comfortaa', cursive; font-size: 1.35rem; font-weight: 700; color: #7B3F61; margin-top: 15px;">
+                Someone has a very special surprise for you... ✨
+            </p>
+            <p style="font-size: 1.05rem; color: #9E6B89; font-style: italic;">
+                Hold your breath! Starting the countdown...
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        time.sleep(2.0)
+
+        # Step 1: Countdown 3
+        countdown_placeholder.markdown("""
+        <div style="text-align: center; padding: 70px 20px;">
+            <div style="font-family: 'Comfortaa', cursive; font-size: 1.3rem; font-weight: 700; color: #BA68C8; letter-spacing: 2px; text-transform: uppercase;">
                 Are you ready, Ruhii?
-              </span>
-              <div className="font-script text-8xl sm:text-9xl font-bold text-pink-600 my-4 animate-pulse-glow">
+            </div>
+            <div style="font-family: 'Dancing Script', cursive; font-size: 7.5rem; font-weight: 700; color: #FF4081; text-shadow: 0 0 40px rgba(255, 64, 129, 0.6); margin: 15px 0;">
                 3...
-              </div>
-              <p className="font-comfortaa text-base font-semibold text-purple-900">A little magic is brewing 🌸</p>
             </div>
-          )}
+            <p style="font-family: 'Comfortaa', cursive; font-size: 1.2rem; color: #7B3F61; font-weight: 600;">A little magic is brewing 🌸</p>
+        </div>
+        """, unsafe_allow_html=True)
+        time.sleep(1.3)
 
-          {countdownStep === 2 && (
-            <div className="text-center p-8 rounded-3xl glass-panel shadow-2xl">
-              <span className="font-comfortaa text-sm font-bold tracking-widest text-purple-600 uppercase">
+        # Step 2: Countdown 2
+        countdown_placeholder.markdown("""
+        <div style="text-align: center; padding: 70px 20px;">
+            <div style="font-family: 'Comfortaa', cursive; font-size: 1.3rem; font-weight: 700; color: #BA68C8; letter-spacing: 2px; text-transform: uppercase;">
                 Smile please! 😌
-              </span>
-              <div className="font-script text-8xl sm:text-9xl font-bold text-fuchsia-600 my-4 animate-pulse-glow">
+            </div>
+            <div style="font-family: 'Dancing Script', cursive; font-size: 8rem; font-weight: 700; color: #E040FB; text-shadow: 0 0 45px rgba(224, 64, 251, 0.65); margin: 15px 0;">
                 2...
-              </div>
-              <p className="font-comfortaa text-base font-semibold text-purple-900">Dhadkanein tez ho rahi hain? 💓</p>
             </div>
-          )}
+            <p style="font-family: 'Comfortaa', cursive; font-size: 1.2rem; color: #7B3F61; font-weight: 600;">Dhadkanein tez ho rahi hain? 💓</p>
+        </div>
+        """, unsafe_allow_html=True)
+        time.sleep(1.3)
 
-          {countdownStep === 3 && (
-            <div className="text-center p-8 rounded-3xl glass-panel shadow-2xl">
-              <span className="font-comfortaa text-sm font-bold tracking-widest text-purple-600 uppercase">
-                Almost there! 🎉
-              </span>
-              <div className="font-script text-8xl sm:text-9xl font-bold text-rose-600 my-4 animate-pulse-glow">
+        # Step 3: Countdown 1
+        countdown_placeholder.markdown("""
+        <div style="text-align: center; padding: 70px 20px;">
+            <div style="font-family: 'Comfortaa', cursive; font-size: 1.3rem; font-weight: 700; color: #BA68C8; letter-spacing: 2px; text-transform: uppercase;">
+                Here it comes! 🎉
+            </div>
+            <div style="font-family: 'Dancing Script', cursive; font-size: 8.5rem; font-weight: 700; color: #FF1744; text-shadow: 0 0 50px rgba(255, 23, 68, 0.7); margin: 15px 0;">
                 1...
-              </div>
-              <p className="font-comfortaa text-base font-semibold text-purple-900">Close your eyes & make a wish! 🌟</p>
             </div>
-          )}
+            <p style="font-family: 'Comfortaa', cursive; font-size: 1.2rem; color: #7B3F61; font-weight: 600;">Close your eyes & make a wish! 🌟</p>
+        </div>
+        """, unsafe_allow_html=True)
+        time.sleep(1.3)
 
-          {countdownStep === 4 && (
-            <div className="text-center max-w-xl mx-auto p-6 sm:p-9 rounded-3xl glass-panel shadow-2xl border-2 border-pink-200 animate-fade-in">
-              <div className="flex justify-center gap-3 text-3xl mb-2">
-                <span>🎈</span>
-                <span>✨</span>
-                <span>👑</span>
-                <span>💖</span>
-                <span>🥳</span>
-                <span>🎈</span>
-              </div>
+        st.session_state.countdown_done = True
+        st.rerun()
 
-              <h1 className="font-script text-4xl sm:text-6xl font-bold bg-gradient-to-r from-pink-600 via-fuchsia-600 to-rose-500 bg-clip-text text-transparent mb-1 drop-shadow-md">
+    else:
+        # GRAND BIRTHDAY REVEAL SCREEN WITH PHOTO & CELEBRATORY BELLS
+        st.balloons()
+        play_celebration_bells()
+
+        photo_markup = ""
+        if RUHII_PORTRAIT_B64:
+            photo_markup = f"""
+            <div style="text-align: center; margin: 15px 0 20px;">
+                <div class="portrait-glow-ring">
+                    <img src="{RUHII_PORTRAIT_B64}" alt="Ruhii" class="portrait-img" />
+                </div>
+                <div style="margin-top: 10px;">
+                    <span style="background: rgba(255, 255, 255, 0.95); padding: 5px 16px; border-radius: 50px; font-family: 'Comfortaa', cursive; font-weight: 700; font-size: 0.85rem; color: #C2185B; box-shadow: 0 4px 15px rgba(219, 39, 119, 0.2); border: 1px solid rgba(255, 182, 193, 0.8);">
+                        👑 Birthday Princess Ruhii ✨
+                    </span>
+                </div>
+            </div>
+            """
+
+        reveal_html = f"""
+        <div style="text-align: center; padding: 20px 15px 30px;">
+            <div style="font-size: 2.8rem; margin-bottom: 6px;">
+                🎈 ✨ 👑 💖 🥳 🎈
+            </div>
+
+            <h1 style="font-family: 'Dancing Script', cursive; font-size: 3.8rem; font-weight: 700;
+                       background: linear-gradient(135deg, #FF1493, #9C27B0, #FF69B4);
+                       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                       text-shadow: 0 6px 25px rgba(255, 20, 147, 0.35); margin: 5px 0 8px;">
                 HAPPY BIRTHDAY RUHII! 🎂
-              </h1>
+            </h1>
 
-              <div className="font-serif-title italic text-base sm:text-lg text-pink-700 font-semibold mb-4">
+            <div style="font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.25rem; color: #C2417C; font-weight: 600; margin-bottom: 18px;">
                 "A Little World Made for Ruhii 💗"
-              </div>
-
-              {/* RUHII'S BIRTHDAY PORTRAIT WITH GLOWING PRINCESS FRAME */}
-              <div className="relative my-4 flex justify-center">
-                <div className="relative group">
-                  <div className="absolute -inset-1.5 bg-gradient-to-r from-pink-500 via-purple-500 to-rose-500 rounded-full blur-md opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-glow"></div>
-                  <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full overflow-hidden border-4 border-white shadow-2xl bg-pink-100">
-                    <img
-                      src="/ruhii.jpg"
-                      alt="Birthday Girl Ruhii"
-                      className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white/95 px-3 py-1 rounded-full shadow-md border border-pink-200 text-xs font-comfortaa font-bold text-pink-700 flex items-center gap-1">
-                    <span>👑</span>
-                    <span>Birthday Princess</span>
-                    <span>✨</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="my-4 p-5 rounded-2xl bg-white/75 border border-pink-100 shadow-inner">
-                <div className="flex justify-center items-center gap-2 text-2xl mb-1">
-                  <span>🎂</span>
-                  <span className="text-sm tracking-widest text-amber-500">🕯️ 🕯️ 🕯️</span>
-                  <span>✨</span>
-                </div>
-                <p className="font-comfortaa text-base sm:text-lg font-bold text-purple-950 leading-relaxed">
-                  Made with a little madness, endless duas, and lots of love.
-                </p>
-                <p className="text-xs text-pink-600 mt-1 font-semibold">
-                  Aj ka har lamha sirf aur sirf tumhari muskurahat ke naam hai! ✨
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  setEnteredWorld(true);
-                  setCurrentPage(1);
-                  playCelebrationChime();
-                  logEvent("Entered Ruhii's Magical World 🌸");
-                }}
-                className="w-full py-4 px-6 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-rose-500 text-white font-comfortaa font-bold text-lg sm:text-xl shadow-lg hover:shadow-pink-300/50 hover:scale-[1.02] active:scale-95 transition-all"
-              >
-                Okay Princess, Enter Your World 💗
-              </button>
             </div>
-          )}
+
+            {photo_markup}
+
+            <div class="glass-card" style="max-width: 620px; margin: 0 auto 25px; border: 2px solid rgba(255, 182, 193, 0.8);">
+                <div style="font-size: 1.5rem; margin-bottom: 10px;">
+                    🎂 🕯️ 🕯️ 🕯️ ✨
+                </div>
+
+                <p style="font-family: 'Comfortaa', cursive; font-size: 1.2rem; font-weight: 700; color: #532C4A; line-height: 1.6; margin-bottom: 10px;">
+                    Made with a little madness, endless duas, and lots of love.
+                </p>
+
+                <p style="font-size: 0.98rem; color: #8F557C; margin-bottom: 0;">
+                    Aaj ka har pal sirf tumhari muskurahat ke naam hai! ✨
+                </p>
+            </div>
         </div>
-      )}
+        """
+        st.markdown(reveal_html, unsafe_allow_html=True)
 
-      {/* ========================================================================= */}
-      {/* SECTION 2: MAIN EXPERIENCE - CONTENT AT TOP (FIVE SEPARATE PAGES) */}
-      {/* ========================================================================= */}
-      {enteredWorld && (
-        <main className="relative z-10 max-w-2xl mx-auto px-4 pt-6">
+        col1, col2, col3 = st.columns([1, 4, 1])
+        with col2:
+            if st.button("Okay Princess, Enter Your World 💗", key="btn_enter_world"):
+                st.session_state.entered_world = True
+                st.session_state.current_page = 1
+                st.session_state.page_enter_time = time.time()
+                log_activity("Entered Main Birthday World 🌸")
+                st.rerun()
 
-          {/* ------------------------------------------------------------------- */}
-          {/* PAGE 1: BIRTHDAY WISHES 💌 */}
-          {/* ------------------------------------------------------------------- */}
-          {currentPage === 1 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="text-center">
-                <h1 className="font-greatvibes text-5xl sm:text-6xl text-pink-600 font-bold mb-2 drop-shadow-sm leading-tight">
-                  A Special Day for a Special Soul 💌
-                </h1>
-                <p className="font-caveat text-2xl sm:text-3xl font-bold text-purple-800 tracking-wide">
-                  "Aj ka din sirf tumhara hai, madam! Toh smile karna compulsory hai. 😌"
-                </p>
-              </div>
+    st.stop()
 
-              {/* Main Letter Card */}
-              <div className="glass-panel rounded-3xl p-6 sm:p-9 relative overflow-hidden border border-pink-200 shadow-xl">
-                <div className="flex justify-center text-3xl mb-3">
-                  🌸 💌 💖
-                </div>
-                <h3 className="font-cormorant italic text-3xl sm:text-4xl font-bold text-pink-900 mb-4 tracking-wide">
-                  Dear Ruhii,
-                </h3>
-                <div className="font-caveat text-2xl sm:text-3xl leading-relaxed text-slate-800 space-y-4">
-                  <p>
-                    Happy Birthday to one of the most special people in my life. Tumhari friendship meri life ka ek beautiful part hai. I hope tumhari life hamesha happiness, success, laughter aur beautiful memories se filled rahe.
-                  </p>
-                  <p>
-                    Hamesha aise hi smile karti rehna because your smile deserves the whole universe.
-                  </p>
-                </div>
-                <div className="text-right font-greatvibes text-3xl sm:text-4xl font-bold text-pink-700 mt-6">
-                  With endless love & blessings, Always 💗
-                </div>
-              </div>
 
-              {/* Ultra Stylish Bulletin Card */}
-              <div className="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-r from-pink-100 via-rose-50 to-pink-100 border-2 border-pink-300 shadow-lg">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-comfortaa font-bold text-xs uppercase tracking-wider mb-3 shadow-md">
-                  <span>🚨</span>
-                  <span>Special Birthday Bulletin</span>
-                  <Sparkles size={14} />
-                </div>
-                <p className="font-outfit text-base sm:text-lg font-semibold text-rose-950 leading-relaxed">
-                  "Breaking News: Aaj duniya ki sabse cute aur thori si pagal larki ka birthday hai! 😂 Sources confirm that madam is officially required to smile nonstop all day!"
-                </p>
-              </div>
+# ==============================================================================
+# SECRET PAGE (PASSWORD-PROTECTED RUHII ACTIVITY & HISTORY TRACKER)
+# ==============================================================================
+if st.session_state.show_secret_page:
+    render_complete_page_live_snowfall("stars")
 
-              {/* Navigation Action Buttons */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => { setEnteredWorld(false); setCountdownStep(4); }}
-                  className="flex-1 py-3 px-4 rounded-full bg-white/80 border border-pink-200 text-pink-800 font-bold text-sm hover:bg-pink-50 flex items-center justify-center gap-1.5 font-comfortaa"
-                >
-                  <Home size={16} />
-                  <span>Home</span>
-                </button>
-                <button
-                  onClick={() => { handlePageSwitch(2); playCelebrationChime(); }}
-                  className="flex-[2] py-3 px-5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-comfortaa font-bold text-base shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Next: Unlock Duas 🤲</span>
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ------------------------------------------------------------------- */}
-          {/* PAGE 2: DUAS AND BLESSINGS 🤲 (NO NUMBERING, STYLISH FONT, CUTE EMOJIS) */}
-          {/* ------------------------------------------------------------------- */}
-          {currentPage === 2 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="text-center">
-                <h1 className="font-greatvibes text-5xl sm:text-6xl font-bold text-purple-700 mb-2 leading-tight">
-                  Prayers From My Heart 🤲
-                </h1>
-                <p className="font-cormorant italic text-xl sm:text-2xl font-bold text-purple-900 tracking-wide">
-                  "Allah tumhari zindagi ko khushiyon aur barkaton se bhar de. Ameen! 🤍"
-                </p>
-              </div>
-
-              <div className="glass-panel rounded-3xl p-6 sm:p-8 border-purple-200 space-y-3.5 shadow-xl">
-                <div className="flex justify-center text-3xl mb-1">
-                  ✨ 🌙 🕊️ 🤲 ✨
-                </div>
-
-                {DUAS_WITH_EMOJIS.map((duaObj, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white/90 border-l-4 border-purple-400 shadow-sm hover:shadow-md hover:translate-x-1.5 transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl select-none">{duaObj.startEmoji}</span>
-                      <p className="font-cormorant text-xl sm:text-2xl font-semibold text-purple-950 leading-snug">
-                        {duaObj.text}
-                      </p>
-                    </div>
-                    <span className="text-lg select-none pl-2">{duaObj.endEmoji}</span>
-                  </div>
-                ))}
-
-                <div className="text-center pt-4">
-                  <div className="font-greatvibes text-4xl sm:text-5xl font-bold text-purple-800">
-                    Ameen Sum Ameen! 🤲 🤍
-                  </div>
-                  <p className="font-comfortaa text-xs sm:text-sm text-purple-600 mt-1 font-semibold">
-                    May every single angel whisper Ameen to these prayers for you!
-                  </p>
-                </div>
-              </div>
-
-              {/* Navigation Action Buttons (Advances to new Gallery page!) */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => handlePageSwitch(1)}
-                  className="flex-1 py-3 px-4 rounded-full bg-white/80 border border-purple-200 text-purple-800 font-bold text-sm hover:bg-purple-50 flex items-center justify-center gap-1 font-comfortaa"
-                >
-                  <ChevronLeft size={16} />
-                  <span>Previous</span>
-                </button>
-                <button
-                  onClick={() => { handlePageSwitch(3); playCelebrationChime(); }}
-                  className="flex-[2] py-3 px-5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-comfortaa font-bold text-base shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Ruhii's Royal Gallery 📸 👑</span>
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ------------------------------------------------------------------- */}
-          {/* NEW PAGE 3: RUHII'S ROYAL PHOTO GALLERY 📸 👑 */}
-          {/* ------------------------------------------------------------------- */}
-          {currentPage === 3 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-comfortaa text-xs font-bold uppercase tracking-wider mb-2 shadow-md">
-                  <Camera size={14} />
-                  <span>The Queen's Visual Diary</span>
-                  <Sparkles size={14} />
-                </div>
-                <h1 className="font-greatvibes text-5xl sm:text-6xl font-bold text-pink-600 mb-2 leading-tight">
-                  Ruhii's Royal Moments 👑
-                </h1>
-                <p className="font-cormorant italic text-xl sm:text-2xl font-bold text-purple-900 tracking-wide">
-                  "Har photo mein ek alag hi noor aur masoomiyat hai! MashAllah 🤍"
-                </p>
-              </div>
-
-              {/* 4 Photo Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {RUHII_GALLERY.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="glass-panel rounded-3xl p-4 border-2 border-pink-200 hover:border-pink-400 shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between"
-                  >
-                    <div className="relative rounded-2xl overflow-hidden shadow-md bg-pink-100 aspect-[3/4] mb-3 group">
-                      <img
-                        src={item.src}
-                        alt={item.title}
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                        <span className="text-white text-xs font-comfortaa font-bold">
-                          Ruhii • Birthday Queen 💖
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-center px-2 pb-1">
-                      <h4 className="font-comfortaa font-bold text-pink-800 text-base mb-1">
-                        {item.title}
-                      </h4>
-                      <p className="font-outfit text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
-                        {item.tagline}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Navigation Action Buttons */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => handlePageSwitch(2)}
-                  className="flex-1 py-3 px-4 rounded-full bg-white/80 border border-pink-200 text-pink-800 font-bold text-sm hover:bg-pink-50 flex items-center justify-center gap-1 font-comfortaa"
-                >
-                  <ChevronLeft size={16} />
-                  <span>Previous (Duas)</span>
-                </button>
-                <button
-                  onClick={() => { handlePageSwitch(4); playCelebrationChime(); }}
-                  className="flex-[2] py-3 px-5 rounded-full bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white font-comfortaa font-bold text-base shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Chalo Ab Thori Masti Ho Jaye 😂</span>
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ------------------------------------------------------------------- */}
-          {/* PAGE 4: FUNNY AND CUTE SECTION 😂 (DECENT, ELEGANT FONTS, NO POINTING HANDS) */}
-          {/* ------------------------------------------------------------------- */}
-          {currentPage === 4 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="text-center">
-                <h1 className="font-greatvibes text-5xl sm:text-6xl font-bold text-amber-700 mb-2 leading-tight">
-                  Ruhii Ki Pagalpanti Department 😂
-                </h1>
-                <p className="font-comfortaa text-sm sm:text-base font-bold text-rose-800">
-                  "Warning: Is page ko dekh kar hansna mana nahi hai! 🤣"
-                </p>
-              </div>
-
-              {/* Decent, clean and elegant Pagalpanti truths without pointing hands */}
-              <div className="glass-panel rounded-3xl p-6 sm:p-7 border-amber-200 space-y-3.5 shadow-xl">
-                <div className="flex justify-center text-3xl mb-1">
-                  🤪 🍰 🍟 🎭 👑
-                </div>
-                <h3 className="text-center font-comfortaa font-bold text-amber-900 text-sm tracking-wider uppercase mb-3">
-                  Official Birthday Truths 📢
-                </h3>
-
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50/80 border border-amber-200/80 shadow-sm flex items-center gap-3.5 hover:shadow-md transition-all">
-                  <span className="text-2xl select-none">🏆</span>
-                  <p className="font-outfit text-base font-medium text-slate-800 leading-relaxed">
-                    Congratulations! Tum officially ek saal aur experienced ho gayi ho... lekin harkatein abhi bhi bachon wali hain. 😂
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50/80 border border-amber-200/80 shadow-sm flex items-center gap-3.5 hover:shadow-md transition-all">
-                  <span className="text-2xl select-none">🎂</span>
-                  <p className="font-outfit text-base font-medium text-slate-800 leading-relaxed">
-                    Cake tumhara hai, lekin khaane ka haq mera bhi banta hai.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50/80 border border-amber-200/80 shadow-sm flex items-center gap-3.5 hover:shadow-md transition-all">
-                  <span className="text-2xl select-none">⏳</span>
-                  <p className="font-outfit text-base font-medium text-slate-800 leading-relaxed">
-                    Tumhari age increase ho rahi hai, maturity abhi bhi loading hai... 2%. 🤣
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50/80 border border-amber-200/80 shadow-sm flex items-center gap-3.5 hover:shadow-md transition-all">
-                  <span className="text-2xl select-none">✨</span>
-                  <p className="font-outfit text-base font-medium text-slate-800 leading-relaxed">
-                    Aaj tumhari har wish poori ho, bas mujhe tang karne wali wishes exclude hain.
-                  </p>
-                </div>
-              </div>
-
-              {/* Interactive Compliment Generator */}
-              <div className="glass-panel rounded-3xl p-6 text-center border-rose-200 shadow-xl">
-                <div className="text-2xl mb-1">🎁 💝 👑</div>
-                <h3 className="font-comfortaa font-bold text-rose-800 text-lg mb-1">
-                  Reveal My Birthday Compliment
-                </h3>
-                <p className="font-outfit text-sm text-rose-600 mb-4 font-medium">
-                  Click below to generate a cute & funny verified truth about Ruhii!
-                </p>
-
-                <button
-                  onClick={() => {
-                    const randomComp = COMPLIMENTS[Math.floor(Math.random() * COMPLIMENTS.length)];
-                    setCompliment(randomComp);
-                    playTuneNote(659.25, 0.3);
-                    logEvent(`Revealed Compliment: "${randomComp.slice(0, 32)}..."`);
-                  }}
-                  className="py-3 px-6 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-white font-comfortaa font-bold text-sm shadow-md hover:scale-105 active:scale-95 transition-all"
-                >
-                  Reveal My Birthday Compliment 💝
-                </button>
-
-                {compliment && (
-                  <div className="mt-4 p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 font-outfit text-rose-950 font-semibold text-base sm:text-lg animate-pulse-glow shadow-sm">
-                    "{compliment}"
-                  </div>
-                )}
-              </div>
-
-              {/* Navigation Action Buttons */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => handlePageSwitch(3)}
-                  className="flex-1 py-3 px-4 rounded-full bg-white/80 border border-amber-200 text-amber-900 font-bold text-sm hover:bg-amber-50 flex items-center justify-center gap-1 font-comfortaa"
-                >
-                  <ChevronLeft size={16} />
-                  <span>Previous</span>
-                </button>
-                <button
-                  onClick={() => { handlePageSwitch(5); playCelebrationChime(); }}
-                  className="flex-[2] py-3 px-5 rounded-full bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white font-comfortaa font-bold text-base shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Ab Last Surprise Dekho ❤️</span>
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ------------------------------------------------------------------- */}
-          {/* PAGE 5: SPECIAL MESSAGE ❤️ (COOL STYLISH LETTER FONT & SECRET HEART) */}
-          {/* ------------------------------------------------------------------- */}
-          {currentPage === 5 && (
-            <div className="space-y-6 animate-fade-in">
-              <div className="text-center">
-                <h1 className="font-greatvibes text-5xl sm:text-6xl font-bold text-rose-600 mb-2 leading-tight">
-                  One Last Thing, Ruhii... ❤️
-                </h1>
-                <p className="font-cormorant italic text-xl sm:text-2xl font-bold text-pink-900 tracking-wide">
-                  "Kuch baatein hoti hain jo words mein explain karna mushkil hota hai."
-                </p>
-              </div>
-
-              {/* Emotional Letter */}
-              <div className="glass-panel rounded-3xl p-6 sm:p-9 border-rose-200 relative shadow-xl">
-                <div className="flex justify-center my-2">
-                  <div className="text-6xl animate-pulse-glow">💖</div>
-                </div>
-
-                <div className="font-caveat text-2xl sm:text-3xl leading-relaxed text-slate-800 space-y-4 my-5">
-                  <p>
-                    Ruhii, I just want you to know that you are genuinely special. Life mein bohat se log milte hain, lekin kuch log apni presence se har moment ko beautiful bana dete hain. Tum unhi logon mein se ho. May your smile never fade, may your dreams come true, and may happiness always find its way to you.
-                  </p>
-                  <p className="font-bold text-purple-950">
-                    Thank you for being you. Stay blessed, stay crazy, and never stop smiling.
-                  </p>
-                </div>
-
-                <div className="mt-6 p-4 rounded-2xl bg-gradient-to-r from-pink-100 to-rose-100 text-center border border-pink-200">
-                  <div className="font-cormorant text-2xl sm:text-3xl font-bold text-rose-700 tracking-wide">
-                    YOU DESERVE ALL THE HAPPINESS IN THE WORLD! 💗
-                  </div>
-                </div>
-              </div>
-
-              {/* One More Hug Feature */}
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setShowHug(true);
-                    playCelebrationChime();
-                    logEvent("Clicked 'One More Hug' 🤗");
-                  }}
-                  className="w-full max-w-sm py-3.5 px-6 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 text-white font-comfortaa font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-all inline-flex items-center justify-center gap-2"
-                >
-                  <span>One More Hug? 🤗</span>
-                </button>
-              </div>
-
-              {/* Hug Overlay Celebration */}
-              {showHug && (
-                <div className="p-6 rounded-3xl glass-panel border-2 border-pink-300 text-center animate-fade-in bg-pink-100/90 shadow-2xl">
-                  <div className="text-6xl mb-2 animate-bounce">🤗 💗 🫂</div>
-                  <div className="font-greatvibes text-4xl sm:text-5xl font-bold text-rose-600 mb-2">
-                    SENDING YOU INFINITE HUGS & LOVE! 💗
-                  </div>
-                  <p className="font-comfortaa text-sm sm:text-base font-bold text-purple-950">
-                    May your whole year ahead be as soft, warm, and comforting as the biggest hug!
-                  </p>
-                </div>
-              )}
-
-              {/* Navigation Action Buttons */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => handlePageSwitch(4)}
-                  className="flex-1 py-3 px-4 rounded-full bg-white/80 border border-rose-200 text-rose-800 font-bold text-sm hover:bg-rose-50 flex items-center justify-center gap-1 font-comfortaa"
-                >
-                  <ChevronLeft size={16} />
-                  <span>Previous</span>
-                </button>
-                <button
-                  onClick={() => { handlePageSwitch(1); playCelebrationChime(); }}
-                  className="flex-[2] py-3 px-5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 text-white font-comfortaa font-bold text-base shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Open My Little Letter 💌</span>
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-
-              {/* Dedication: "Made with Love for MY Dear Bestiee ❤️" */}
-              <footer className="text-center pt-8 pb-4">
-                <p className="font-greatvibes text-3xl sm:text-4xl text-pink-600 font-bold tracking-wide">
-                  Made with Love for MY Dear Bestiee ❤️
-                </p>
-                <p className="text-pink-400 mt-1 font-comfortaa text-xs">
-                  A Little World Made for Ruhii 💗 • Happy Birthday!
-                </p>
-
-                {/* DISCRETE HEART BUTTON FOR SECRET BESTIE ACTIVITY PAGE */}
-                <div className="flex justify-center mt-3">
-                  <button
-                    onClick={() => {
-                      setShowSecretModal(true);
-                      logEvent("Secret Heart Clicked 🔒");
-                    }}
-                    title="A little secret"
-                    className="p-2 rounded-full text-pink-300 hover:text-pink-600 hover:scale-125 transition-all opacity-40 hover:opacity-100"
-                  >
-                    <Heart size={18} className="fill-current" />
-                  </button>
-                </div>
-              </footer>
-            </div>
-          )}
-        </main>
-      )}
-
-      {/* ========================================================================= */}
-      {/* SECRET MODAL / PAGE: PASSWORD PROTECTED RUHII ACTIVITY HISTORY TRACKER */}
-      {/* ========================================================================= */}
-      {showSecretModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border-2 border-purple-200 flex flex-col max-h-[85vh]">
-            <div className="flex items-center justify-between pb-3 border-b border-purple-100">
-              <div className="flex items-center gap-2 text-purple-900 font-bold font-comfortaa">
-                <Lock size={18} className="text-purple-600" />
-                <span>Ruhii's Secret Journey Log</span>
-              </div>
-              <button
-                onClick={() => { setShowSecretModal(false); setPasswordError(''); }}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm"
-              >
-                ✕
-              </button>
-            </div>
-
-            {!secretUnlocked ? (
-              <div className="py-6 text-center">
-                <div className="text-5xl mb-3">🔐 ✨ 💖</div>
-                <h4 className="font-comfortaa font-bold text-purple-950 text-lg mb-2">
-                  Bestie Access Passcode
-                </h4>
-                <p className="font-outfit text-sm text-purple-700 mb-5">
-                  Enter password to see the real-time record of which pages Ruhii opened and how long she spent on each surprise!
-                </p>
-
-                <div className="max-w-xs mx-auto space-y-3">
-                  <input
-                    type="password"
-                    placeholder="Enter passcode (default: bestie)"
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        if (['bestie', 'ruhii', 'ruhii123', 'love'].includes(passwordInput.trim().toLowerCase())) {
-                          setSecretUnlocked(true);
-                          setPasswordError('');
-                        } else {
-                          setPasswordError('Incorrect passcode! Only bestie knows.');
-                        }
-                      }
-                    }}
-                    className="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-center font-comfortaa text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-                  />
-                  {passwordError && (
-                    <p className="text-xs text-rose-500 font-semibold">{passwordError}</p>
-                  )}
-                  <button
-                    onClick={() => {
-                      if (['bestie', 'ruhii', 'ruhii123', 'love'].includes(passwordInput.trim().toLowerCase())) {
-                        setSecretUnlocked(true);
-                        setPasswordError('');
-                      } else {
-                        setPasswordError('Incorrect passcode! Only bestie knows.');
-                      }
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-comfortaa font-bold text-sm shadow hover:scale-105 transition-all"
-                  >
-                    Unlock History 🔓
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="py-4 flex flex-col flex-1 overflow-hidden">
-                <div className="flex items-center justify-between mb-3 text-xs font-bold text-purple-800">
-                  <span className="flex items-center gap-1.5">
-                    <Clock size={14} />
-                    <span>Real-Time Visitor Journey Timeline</span>
-                  </span>
-                  <span className="bg-purple-100 text-purple-700 px-2.5 py-0.5 rounded-full">
-                    Live Recording
-                  </span>
-                </div>
-
-                <div className="overflow-y-auto space-y-2.5 pr-1 flex-1 max-h-[50vh]">
-                  {activityLog.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 rounded-2xl bg-purple-50/80 border border-purple-100 flex items-center justify-between text-xs"
-                    >
-                      <span className="font-outfit font-semibold text-purple-950">
-                        {item.event}
-                      </span>
-                      <span className="font-mono text-[11px] font-bold text-purple-600 bg-white px-2 py-0.5 rounded-md shadow-xs ml-2 shrink-0">
-                        {item.time}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-4 border-t border-purple-100 flex items-center justify-between">
-                  <button
-                    onClick={() => {
-                      setActivityLog([{ time: new Date().toLocaleTimeString(), event: "Log refreshed" }]);
-                    }}
-                    className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 font-semibold"
-                  >
-                    <Trash2 size={13} />
-                    <span>Clear Log</span>
-                  </button>
-                  <button
-                    onClick={() => setShowSecretModal(false)}
-                    className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs font-comfortaa transition-all"
-                  >
-                    Close Log
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: VIEW / COPY STREAMLIT app.py & requirements.txt */}
-      {/* ========================================================================= */}
-      {showPythonCodeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl max-h-[85vh] flex flex-col border border-pink-200">
-            <div className="flex items-center justify-between pb-4 border-b border-pink-100">
-              <div>
-                <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                  <Code className="text-pink-600" size={20} />
-                  <span>Python Streamlit File: <code>app.py</code></span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Updated with Ruhii's photo gallery page and top-to-bottom falling emoji snowfall animation
-                </p>
-              </div>
-              <button
-                onClick={() => setShowPythonCodeModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="my-4 overflow-y-auto p-4 rounded-xl bg-slate-900 text-slate-100 text-xs font-mono leading-relaxed space-y-4">
-              <div>
-                <span className="text-emerald-400"># requirements.txt</span>
-                <pre className="mt-1 text-slate-300">streamlit&gt;=1.35.0</pre>
-              </div>
-              <div>
-                <span className="text-emerald-400"># app.py</span>
-                <pre className="mt-1 text-slate-300">
-                  {`The file /app.py has been updated with:
-- Dedicated "Ruhii's Royal Moments" gallery page right after Duas
-- All 4 new portrait photos with aesthetic borders and sweet bestie captions
-- Live falling emoji animation cascading top to bottom like magical snowfall across the complete page
-- Sound voice removed, sweet celebratory chimes and bells retained
-- Secret passcode-protected page tracking every page open time & action
-- Footer dedication: "Made with Love for MY Dear Bestiee ❤️"`}
-                </pre>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-pink-100">
-              <button
-                onClick={handleCopyCode}
-                className="px-4 py-2 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all"
-              >
-                {copiedCode ? <Check size={16} /> : <Copy size={16} />}
-                <span>{copiedCode ? 'Copied to Clipboard!' : 'Copy app.py Content'}</span>
-              </button>
-              <button
-                onClick={() => setShowPythonCodeModal(false)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    st.markdown("""
+    <div style="text-align: center; margin-top: 10px; margin-bottom: 15px;">
+        <h1 class="title-greatvibes" style="color: #8E24AA; font-size: 3.5rem;">Ruhii's Secret Journey Log 🔒</h1>
+        <p style="font-family: 'Comfortaa', cursive; font-size: 1.05rem; font-weight: 600; color: #6A1B9A;">
+            Confidential Diary & Real-Time Bestie Activity Tracker
+        </p>
     </div>
-  );
-}
+    """, unsafe_allow_html=True)
+
+    if not st.session_state.secret_unlocked:
+        st.markdown("""
+        <div class="glass-card" style="text-align: center; max-width: 500px; margin: 0 auto; border: 2px solid #BA68C8;">
+            <div style="font-size: 3.5rem; margin-bottom: 12px;">🔐 ✨ 💖</div>
+            <h3 style="font-family: 'Comfortaa', cursive; color: #6A1B9A; font-weight: 700; margin-bottom: 10px;">
+                Enter Bestie Passcode
+            </h3>
+            <p style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; color: #5B2C4E; margin-bottom: 18px;">
+                This secret portal records every timestamp, page open duration, and action Ruhii takes on this website.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_pw1, col_pw2, col_pw3 = st.columns([1, 2, 1])
+        with col_pw2:
+            pwd = st.text_input("Password", type="password", placeholder="Enter secret password (default: bestie)", key="pwd_input")
+            if st.button("Unlock History 🔓", key="btn_unlock"):
+                if pwd.strip().lower() in ["bestie", "ruhii", "ruhii123", "love"]:
+                    st.session_state.secret_unlocked = True
+                    st.rerun()
+                else:
+                    st.error("Incorrect passcode! Only Ruhii's bestie knows the secret word.")
+
+            if st.button("Back to Website ↩️", key="btn_back_from_secret_locked"):
+                st.session_state.show_secret_page = False
+                st.rerun()
+
+    else:
+        st.markdown("""
+        <div class="glass-card" style="border: 2px solid #BA68C8;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                <h3 style="font-family: 'Comfortaa', cursive; color: #6A1B9A; font-weight: 700; margin: 0;">
+                    📊 Ruhii's Real-Time Session Story
+                </h3>
+                <span style="background: #E1BEE7; color: #4A148C; font-size: 0.8rem; font-weight: 700; padding: 4px 12px; border-radius: 50px;">
+                    LIVE TRACKING
+                </span>
+            </div>
+            <p style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; color: #5C324E; margin-bottom: 16px;">
+                Here is the exact record of which surprises Ruhii explored, when she visited them, and how long she spent admiring each page:
+            </p>
+        """, unsafe_allow_html=True)
+
+        for idx, item in enumerate(st.session_state.activity_log, 1):
+            st.markdown(f"""
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.9); border-radius: 14px; border-left: 4px solid #AB47BC; font-family: 'Outfit', sans-serif;">
+                <span style="font-weight: 600; color: #3E1E45;">{item['event']}</span>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #8E24AA; background: #F3E5F5; padding: 3px 10px; border-radius: 12px;">{item['time']}</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        col_b1, col_b2 = st.columns([1, 1])
+        with col_b1:
+            if st.button("Lock & Return to Surprises 🔒", key="btn_close_secret"):
+                st.session_state.show_secret_page = False
+                st.session_state.secret_unlocked = False
+                st.rerun()
+        with col_b2:
+            if st.button("Clear Log 🧹", key="btn_clear_log"):
+                st.session_state.activity_log = [
+                    {"time": datetime.now().strftime("%I:%M:%S %p"), "event": "Log refreshed"}
+                ]
+                st.rerun()
+
+    st.stop()
+
+
+# ==============================================================================
+# 2. MAIN EXPERIENCE - CONTENT AT TOP (FIVE SEPARATE PAGES)
+# ==============================================================================
+
+# Background theme per page with complete full-page downward live snowfall
+bg_themes = {1: "hearts", 2: "stars", 3: "gallery", 4: "confetti", 5: "hearts"}
+render_complete_page_live_snowfall(bg_themes.get(st.session_state.current_page, "hearts"))
+
+
+# ------------------------------------------------------------------------------
+# PAGE 1: BIRTHDAY WISHES 💌
+# ------------------------------------------------------------------------------
+if st.session_state.current_page == 1:
+    st.markdown("""
+    <div style="text-align: center; margin-top: 5px; margin-bottom: 18px;">
+        <h1 class="title-greatvibes">A Special Day for a Special Soul 💌</h1>
+        <p class="subtitle-caveat">
+            "Aj ka din sirf tumhara hai, madam! Toh smile karna compulsory hai. 😌"
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Main Letter Card
+    st.markdown("""
+    <div class="glass-card">
+        <div style="text-align: center; font-size: 2.2rem; margin-bottom: 12px;">
+            🌸 💌 💖
+        </div>
+        <div style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 2.2rem; font-weight: 700; color: #880E4F; margin-bottom: 14px;">
+            Dear Ruhii,
+        </div>
+        <div class="letter-caveat" style="margin-bottom: 18px;">
+            Happy Birthday to one of the most special people in my life. Tumhari friendship meri life ka ek beautiful part hai. I hope tumhari life hamesha happiness, success, laughter aur beautiful memories se filled rahe.
+        </div>
+        <div class="letter-caveat" style="margin-bottom: 22px;">
+            Hamesha aise hi smile karti rehna because your smile deserves the whole universe.
+        </div>
+        <div style="text-align: right; font-family: 'Great Vibes', cursive; font-size: 2.5rem; color: #C2185B; font-weight: 700;">
+            With endless love & blessings, Always 💗
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Ultra Stylish Bulletin Card
+    st.markdown("""
+    <div class="stylish-bulletin">
+        <div class="bulletin-badge">
+            <span>🚨</span>
+            <span>Special Birthday Bulletin</span>
+            <span>✨</span>
+        </div>
+        <div class="bulletin-text">
+            "Breaking News: Aaj duniya ki sabse cute aur thori si pagal larki ka birthday hai! 😂 Sources confirm that madam is officially required to smile nonstop all day!"
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Navigation Buttons
+    col_p1, col_p2 = st.columns([1, 1])
+    with col_p1:
+        if st.button("🏠 Home", key="btn_home_p1"):
+            st.session_state.entered_world = False
+            st.session_state.countdown_done = True
+            log_activity("Returned to Home Reveal Screen 🏠")
+            st.rerun()
+    with col_p2:
+        if st.button("Next: Unlock Duas 🤲", key="btn_next_p1"):
+            switch_page(2)
+            st.rerun()
+
+
+# ------------------------------------------------------------------------------
+# PAGE 2: DUAS AND BLESSINGS 🤲 (NO NUMBERING, STYLISH FONT, CUTE EMOJIS)
+# ------------------------------------------------------------------------------
+elif st.session_state.current_page == 2:
+    st.markdown("""
+    <div style="text-align: center; margin-top: 5px; margin-bottom: 18px;">
+        <h1 class="title-greatvibes" style="color: #8E24AA;">Prayers From My Heart 🤲</h1>
+        <p class="subtitle-caveat" style="color: #6A1B9A;">
+            "Allah tumhari zindagi ko khushiyon aur barkaton se bhar de. Ameen! 🤍"
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="glass-card" style="background: rgba(255, 255, 255, 0.82); border-color: rgba(206, 147, 216, 0.6);">
+        <div style="text-align: center; font-size: 2.2rem; margin-bottom: 18px;">
+            ✨ 🌙 🕊️ 🤲 ✨
+        </div>
+    """, unsafe_allow_html=True)
+
+    for item in DUAS_DATA:
+        st.markdown(f"""
+        <div class="dua-card-new">
+            <span style="font-size: 1.5rem; margin-right: 12px; select: none;">{item['start']}</span>
+            <div class="dua-text-stylish">{item['text']}</div>
+            <span style="font-size: 1.3rem; margin-left: 10px; select: none;">{item['end']}</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("""
+        <div style="text-align: center; margin-top: 25px; padding: 14px; background: linear-gradient(135deg, rgba(234, 187, 240, 0.35), rgba(255, 214, 230, 0.45)); border-radius: 20px;">
+            <div style="font-family: 'Great Vibes', cursive; font-size: 2.8rem; font-weight: 700; color: #7B1FA2;">
+                Ameen Sum Ameen! 🤲 🤍
+            </div>
+            <div style="font-family: 'Comfortaa', cursive; font-size: 0.95rem; color: #6A1B9A; font-weight: 600; margin-top: 4px;">
+                May every single angel whisper Ameen to these prayers for you!
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Navigation Buttons (Advances to new Gallery page!)
+    c_prev2, c_next2 = st.columns([1, 1])
+    with c_prev2:
+        if st.button("⬅️ Previous", key="btn_prev_p2"):
+            switch_page(1)
+            st.rerun()
+    with c_next2:
+        if st.button("Ruhii's Royal Gallery 📸 👑", key="btn_next_p2"):
+            switch_page(3)
+            st.rerun()
+
+
+# ------------------------------------------------------------------------------
+# NEW PAGE 3: RUHII'S ROYAL PHOTO GALLERY 📸 👑 (RIGHT AFTER DUAS!)
+# ------------------------------------------------------------------------------
+elif st.session_state.current_page == 3:
+    st.markdown("""
+    <div style="text-align: center; margin-top: 5px; margin-bottom: 18px;">
+        <div style="display: inline-block; padding: 5px 18px; border-radius: 50px; background: linear-gradient(135deg, #FF4081, #AB47BC); color: white; font-family: 'Comfortaa', cursive; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;">
+            📸 The Queen's Visual Diary ✨
+        </div>
+        <h1 class="title-greatvibes" style="color: #C2185B;">Ruhii's Royal Moments 👑</h1>
+        <p class="subtitle-caveat" style="color: #7B1FA2;">
+            "Har photo mein ek alag hi noor aur masoomiyat hai! MashAllah 🤍"
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 4 Photo Cards Grid
+    col_g1, col_g2 = st.columns(2)
+
+    for idx, item in enumerate(GALLERY_ITEMS):
+        target_col = col_g1 if idx % 2 == 0 else col_g2
+        with target_col:
+            img_html = ""
+            if item["img"]:
+                img_html = f"""
+                <div class="gallery-img-wrapper">
+                    <img src="{item['img']}" alt="{item['title']}" />
+                </div>
+                """
+            st.markdown(f"""
+            <div class="gallery-card">
+                {img_html}
+                <h4 style="font-family: 'Comfortaa', cursive; font-weight: 700; color: #880E4F; font-size: 1.05rem; margin-bottom: 6px;">
+                    {item['title']}
+                </h4>
+                <p style="font-family: 'Outfit', sans-serif; font-size: 0.88rem; color: #5C324E; font-weight: 500; line-height: 1.5; margin: 0;">
+                    {item['tagline']}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # Navigation Buttons
+    c_prev3, c_next3 = st.columns([1, 1])
+    with c_prev3:
+        if st.button("⬅️ Previous (Duas)", key="btn_prev_p3"):
+            switch_page(2)
+            st.rerun()
+    with c_next3:
+        if st.button("Chalo Ab Thori Masti Ho Jaye 😂", key="btn_next_p3"):
+            switch_page(4)
+            st.rerun()
+
+
+# ------------------------------------------------------------------------------
+# PAGE 4: FUNNY AND CUTE SECTION 😂 (DECENT, ELEGANT FONTS, NO POINTING HANDS)
+# ------------------------------------------------------------------------------
+elif st.session_state.current_page == 4:
+    st.markdown("""
+    <div style="text-align: center; margin-top: 5px; margin-bottom: 18px;">
+        <h1 class="title-greatvibes" style="color: #E64A19;">Ruhii Ki Pagalpanti Department 😂</h1>
+        <p class="subtitle-caveat" style="color: #D84315;">
+            "Warning: Is page ko dekh kar hansna mana nahi hai! 🤣"
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="glass-card" style="border: 2px dashed #FFAB91;">
+        <div style="text-align: center; font-size: 2.4rem; margin-bottom: 12px;">
+            🤪 🍰 🍟 🎭 👑
+        </div>
+        <h3 style="text-align: center; font-family: 'Comfortaa', cursive; color: #D84315; font-weight: 700; margin-bottom: 18px;">
+            Official Birthday Truths 📢
+        </h3>
+    """, unsafe_allow_html=True)
+
+    roasts_clean = [
+        {"icon": "🏆", "text": "Congratulations! Tum officially ek saal aur experienced ho gayi ho... lekin harkatein abhi bhi bachon wali hain. 😂"},
+        {"icon": "🎂", "text": "Cake tumhara hai, lekin khaane ka haq mera bhi banta hai."},
+        {"icon": "⏳", "text": "Tumhari age increase ho rahi hai, maturity abhi bhi loading hai... 2%. 🤣"},
+        {"icon": "✨", "text": "Aaj tumhari har wish poori ho, bas mujhe tang karne wali wishes exclude hain."}
+    ]
+
+    for item in roasts_clean:
+        st.markdown(f"""
+        <div class="masti-card-decent">
+            <span style="font-size: 1.7rem; select: none;">{item['icon']}</span>
+            <div>{item['text']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Interactive Compliment Generator with decent font
+    st.markdown("""
+    <div class="glass-card" style="text-align: center; background: rgba(255, 255, 255, 0.88); border: 2px solid #FF80AB;">
+        <div style="font-size: 2rem; margin-bottom: 8px;">🎁 💝 👑</div>
+        <h3 style="font-family: 'Comfortaa', cursive; color: #C2185B; font-weight: 700; margin-bottom: 10px;">Special Mystery Compliment Generator</h3>
+        <p style="font-family: 'Outfit', sans-serif; font-size: 0.98rem; color: #733454; margin-bottom: 18px; font-weight: 500;">
+            Press the magic button below to unlock a sweet & funny truth about you!
+        </p>
+    """, unsafe_allow_html=True)
+
+    if st.button("Reveal My Birthday Compliment 💝", key="btn_compliment"):
+        selected_comp = random.choice(COMPLIMENTS)
+        st.session_state.compliment = selected_comp
+        log_activity(f"Revealed Compliment: '{selected_comp[:35]}...'")
+
+    if st.session_state.compliment:
+        st.markdown(f"""
+        <div style="margin-top: 18px; padding: 18px 24px; background: linear-gradient(135deg, #FFF0F5, #FCE4EC);
+                    border: 2px solid #F06292; border-radius: 20px; box-shadow: 0 8px 25px rgba(240, 98, 146, 0.25);">
+            <div style="font-size: 1.8rem; margin-bottom: 6px;">✨ 💖 ✨</div>
+            <div style="font-family: 'Outfit', sans-serif; font-size: 1.18rem; font-weight: 600; color: #880E4F; line-height: 1.6;">
+                "{st.session_state.compliment}"
+            </div>
+            <div style="font-family: 'Comfortaa', cursive; font-size: 0.88rem; color: #AD1457; margin-top: 8px; font-weight: 700;">
+                (100% Certified Sach! 😌)
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Navigation Buttons
+    c_prev4, c_next4 = st.columns([1, 1])
+    with c_prev4:
+        if st.button("⬅️ Previous (Gallery)", key="btn_prev_p4"):
+            switch_page(3)
+            st.rerun()
+    with c_next4:
+        if st.button("Ab Last Surprise Dekho ❤️", key="btn_next_p4"):
+            switch_page(5)
+            st.rerun()
+
+
+# ------------------------------------------------------------------------------
+# PAGE 5: SPECIAL MESSAGE ❤️ (COOL STYLISH LETTER FONT & SECRET HEART)
+# ------------------------------------------------------------------------------
+elif st.session_state.current_page == 5:
+    st.markdown("""
+    <div style="text-align: center; margin-top: 5px; margin-bottom: 18px;">
+        <h1 class="title-greatvibes" style="color: #D81B60;">One Last Thing, Ruhii... ❤️</h1>
+        <p class="subtitle-caveat" style="color: #AD1457;">
+            "Kuch baatein hoti hain jo words mein explain karna mushkil hota hai."
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Emotional Heartfelt Card with cool stylish font
+    st.markdown("""
+    <div class="glass-card" style="border: 2px solid rgba(244, 143, 177, 0.8);">
+        <div style="text-align: center; margin: 10px 0 20px;">
+            <div class="pulsing-heart" style="font-size: 5rem; filter: drop-shadow(0 6px 20px rgba(233, 30, 99, 0.4));">
+                💖
+            </div>
+        </div>
+
+        <div class="letter-caveat" style="margin-bottom: 18px;">
+            Ruhii, I just want you to know that you are genuinely special. Life mein bohat se log milte hain, lekin kuch log apni presence se har moment ko beautiful bana dete hain. Tum unhi logon mein se ho. May your smile never fade, may your dreams come true, and may happiness always find its way to you.
+        </div>
+
+        <div class="letter-caveat" style="margin-bottom: 22px; font-weight: 700; color: #5B2C4E;">
+            Thank you for being you. Stay blessed, stay crazy, and never stop smiling.
+        </div>
+
+        <div style="text-align: center; padding: 18px; background: linear-gradient(135deg, rgba(255, 192, 203, 0.4), rgba(225, 190, 231, 0.4)); border-radius: 20px; margin-top: 15px;">
+            <div style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 700; color: #C2185B; letter-spacing: 0.5px;">
+                YOU DESERVE ALL THE HAPPINESS IN THE WORLD! 💗
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Hug Feature
+    hug_col1, hug_col2, hug_col3 = st.columns([1, 3, 1])
+    with hug_col2:
+        if st.button("One More Hug? 🤗", key="btn_hug"):
+            st.session_state.show_hug = True
+            log_activity("Clicked 'One More Hug' 🤗")
+
+    if st.session_state.show_hug:
+        st.balloons()
+        st.markdown("""
+        <div class="glass-card" style="text-align: center; background: linear-gradient(135deg, #FFE4E1, #FFF0F5); border: 2.5px solid #FF4081; margin-top: 20px;">
+            <div style="font-size: 4rem;" class="pulsing-heart">🤗 💗 🫂</div>
+            <div style="font-family: 'Great Vibes', cursive; font-size: 3.2rem; font-weight: 700; color: #E91E63; margin: 10px 0;">
+                SENDING YOU INFINITE HUGS & LOVE! 💗
+            </div>
+            <p style="font-family: 'Comfortaa', cursive; font-size: 1.05rem; color: #7B2456; font-weight: 700;">
+                May your whole year ahead be as soft, warm, and comforting as the biggest hug!
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Navigation Buttons
+    col_p5_1, col_p5_2 = st.columns([1, 1])
+    with col_p5_1:
+        if st.button("⬅️ Previous", key="btn_prev_p5"):
+            switch_page(4)
+            st.rerun()
+    with col_p5_2:
+        if st.button("Open My Little Letter 💌", key="btn_restart_to_1"):
+            switch_page(1)
+            st.rerun()
+
+    # Footer with user-requested dedication: "Made with Love for MY Dear Bestiee ❤️"
+    st.markdown("""
+    <div style="text-align: center; margin-top: 40px; padding: 20px 0; border-top: 1px dashed rgba(200, 140, 180, 0.4);">
+        <p style="font-family: 'Great Vibes', cursive; font-size: 2.4rem; color: #8E4A72; font-weight: 700; margin-bottom: 4px;">
+            Made with Love for MY Dear Bestiee ❤️
+        </p>
+        <p style="font-family: 'Comfortaa', cursive; font-size: 0.85rem; color: #A87093;">
+            A Little World Made for Ruhii 💗 • Happy Birthday!
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Discreet Heart Secret Button
+    c_sec1, c_sec2, c_sec3 = st.columns([5, 1, 5])
+    with c_sec2:
+        if st.button("💗", key="btn_secret_heart", help="Special memory portal"):
+            st.session_state.show_secret_page = True
+            log_activity("Clicked secret heart button 🔒")
+            st.rerun()
